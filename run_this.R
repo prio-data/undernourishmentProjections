@@ -10,9 +10,6 @@ library(lubridate)
 library(tidyr)
 library(arrow)
 
-ragg_png <- function(...) ragg::agg_png(..., res = 300, units = "in")
-
-source("R/1_load_data.R")
 
 
 simulation_alternatives <- c("base", "constant_democracy", "constant_climate", "no_conflict_effect")
@@ -30,9 +27,12 @@ simulation_alternatives <- c("base", "constant_democracy", "constant_climate", "
 
 
 for(simulation_alternative in simulation_alternatives){
+	ragg_png <- function(...) ragg::agg_png(..., res = 300, units = "in")
+	source("R/1_load_data.R")
 	source("R/2_fit_des.R")
 	source("R/3_summary_tables.R")
 	source("R/4_projections.R")
+	rm(list = ls())
 }
 
 
