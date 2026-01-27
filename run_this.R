@@ -1,0 +1,18 @@
+# renv::install("../heterolm")
+library(heterolm)
+library(data.table)
+library(gtsummary)
+library(patchwork)
+library(ggplot2)
+library(ggdist)
+library(dplyr)
+library(lubridate)
+library(tidyr)
+library(arrow)
+
+ragg_png <- function(...) ragg::agg_png(..., res = 300, units = "in")
+
+source("R/1_load_data.R")
+source("R/2_fit_des.R")
+source("R/3_summary_tables.R")
+source("R/4_projections.R")

@@ -1,0 +1,27 @@
+Package: undernourishmentProjections
+Type: Package
+Title: Replication data for "Global hunger risk in alternative climate change and socio-political scenarios"
+Version: 0.1.0
+Authors@R: c(
+    person(
+      "Jonas", "Vestby",
+      email = "jonves@prio.org",
+      role = c("aut", "cre")
+    ),
+    person(
+      "Gudmund", "Horn Hermansen",
+      role = c("aut")
+    ),
+    person(
+      "Halvard", "Buhaug",
+      role = c("aut")
+    ),
+    person(
+      "Paola", "Vesco",
+      role = c("aut")
+    )
+  )
+Description: Run "run_this.R"
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
