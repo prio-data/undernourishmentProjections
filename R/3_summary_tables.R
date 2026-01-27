@@ -71,7 +71,7 @@ summarytable2 <- fitted_df |>
 	) |>
 	gtsummary::modify_caption("Summary statistics of training data for ΔDES model")
 
-summarytable |> gtsummary::as_gt()  |> gt::gtsave("tables/base/summary_table.tex")
-summarytable2 |> gtsummary::as_gt() |> gt::gtsave("tables/base/summary_table_train.tex")
+summarytable |> gtsummary::as_gt()  |> gt::gtsave(file.path("tables", simulation_alternative, "summary_table.tex"))
+summarytable2 |> gtsummary::as_gt() |> gt::gtsave(file.path("tables", simulation_alternative, "summary_table_train.tex"))
 
 
