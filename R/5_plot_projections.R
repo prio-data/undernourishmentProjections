@@ -1,23 +1,4 @@
 #### Plot projections ####
-
-result[scenario == "SSP1"]$scenario <- "SSP1-2.6"
-result[scenario == "SSP2"]$scenario <- "SSP2-4.5"
-result[scenario == "SSP3"]$scenario <- "SSP3-7.0"
-result[scenario == "SSP4"]$scenario <- "SSP4-7.0"
-result[scenario == "SSP5"]$scenario <- "SSP5-8.5"
-
-
-plotting_colors <- c("SSP1" = "#1E9620",
-										 "SSP2" = "#4576BF",
-										 "SSP3" = "#F21111",
-										 "SSP4" = "#E88831",
-										 "SSP5" = "#8036A8")
-
-names(plotting_colors) <- c("SSP1-2.6", "SSP2-4.5", "SSP3-7.0", "SSP4-7.0", "SSP5-8.5")
-
-
-
-
 to_plot <- result[year == 2050,
 									.(
 										nou = sum(nou),

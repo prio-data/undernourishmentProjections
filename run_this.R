@@ -10,6 +10,14 @@ library(lubridate)
 library(tidyr)
 library(arrow)
 
+plotting_colors <- c("SSP1-2.6" = "#1E9620",
+										 "SSP2-4.5" = "#4576BF",
+										 "SSP3-7.0" = "#F21111",
+										 "SSP4-7.0" = "#E88831",
+										 "SSP5-8.5" = "#8036A8")
+
+ragg_png <- function(...) ragg::agg_png(..., res = 300, units = "in")
+
 # Setting up the data
 # - This do require installation of several packages and downloading data from various sources, and these might not run out of the box.
 # source("R/foodbalancesheets.R") # Country-level covariates on food imports and exports, etc.
@@ -42,12 +50,17 @@ simulation_alternatives <- c("base", "constant_democracy", "constant_climate", "
 
 
 for(simulation_alternative in simulation_alternatives){
-	ragg_png <- function(...) ragg::agg_png(..., res = 300, units = "in")
+	rm(list = setdiff(ls(), c("plotting_colors", "ragg_png", "simulation_alternatives", "simulation_alternative")))
+	dir.create(file.path("results", simulation_alternative))
+	dir.create(file.path("tables", simulation_alternative))
+	dir.create(file.path("figures", simulation_alternative))
+
 	source("R/1_load_data.R")
 	source("R/2_fit_des.R")
-	source("R/3_summary_tables.R")
+	#source("R/3_summary_tables.R")
 	source("R/4_projections.R")
-	rm(list = ls())
+	source("R/5_plot_projections.R")
+	rm(list = setdiff(ls(), c("plotting_colors", "ragg_png", "simulation_alternatives", "simulation_alternative")))
 }
 
 

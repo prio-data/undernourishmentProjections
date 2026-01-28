@@ -39,15 +39,17 @@ if(simulation_alternative == "no_conflict_effect"){
 		panel.id = ~ gwcode + year,
 		method = "BFGS"
 	)
+
+	cplot_fit1 <- coefplot(fit1)
+	me <- marginal_effects(fit1, "best", level = 0.95, n_points = 100, type = "shift", clamp = c(0, Inf))
+	meplot <- plot(me)
+	meplot <- meplot + ggtitle("Marginal effects")
+
+	cplot_fit1 + meplot + patchwork::plot_layout(nrow = 1, axes = "collect") &
+		theme_bw(base_size = 24)
+	ggsave(file.path("figures", simulation_alternative, "des_figure.png"), device = ragg_png,  width = 12, height = 4, scale = 1.5)
 }
 
-cplot_fit1 <- coefplot(fit1)
-me <- marginal_effects(fit1, "best", level = 0.95, n_points = 100, type = "shift", clamp = c(0, Inf))
-meplot <- plot(me)
-meplot <- meplot + ggtitle("Marginal effects")
 
-cplot_fit1 + meplot + patchwork::plot_layout(nrow = 1, axes = "collect") &
-	theme_bw(base_size = 24)
-ggsave(file.path("figures", simulation_alternative, "des_figure.png"), device = ragg_png,  width = 12, height = 4, scale = 1.5)
 
 

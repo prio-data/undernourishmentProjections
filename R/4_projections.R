@@ -96,6 +96,12 @@ result[, nou := poldat::estimate_undernourishment(des_sim, cv, mder, population)
 
 #### Aggregated results ####
 
+result[scenario == "SSP1"]$scenario <- "SSP1-2.6"
+result[scenario == "SSP2"]$scenario <- "SSP2-4.5"
+result[scenario == "SSP3"]$scenario <- "SSP3-7.0"
+result[scenario == "SSP4"]$scenario <- "SSP4-7.0"
+result[scenario == "SSP5"]$scenario <- "SSP5-8.5"
+
 global_agg <- result[, .(
 	nou = sum(nou, na.rm = TRUE),
 	pou = weighted.mean(pou, population, na.rm = TRUE),
@@ -111,7 +117,7 @@ global_agg <- result[, .(
 ), by = .(scenario, year, sim)]
 global_agg[, total_des := des * population]
 
-saveRDS(global_agg, file_path("results", simulation_alternative, "global_agg.rds"))
+saveRDS(global_agg, file.path("results", simulation_alternative, "global_agg.rds"))
 
 global_hist <- main_df[gwcode %in% unique(result$gwcode)]
 global_hist[, nou := poldat::estimate_undernourishment(des, cv, mder, population)$number_undernourished]
@@ -133,4 +139,4 @@ by = year
 global_hist[, total_des := des * population]
 global_hist <- na.omit(global_hist)
 
-saveRDS(global_hist, file_path("results", simulation_alternative, "global_hist.rds"))
+saveRDS(global_hist, file.path("results", simulation_alternative, "global_hist.rds"))
