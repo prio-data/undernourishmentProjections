@@ -2,7 +2,7 @@
 
 ## How to setup
 
-1. Clone this repository in the folder you would want it.
+1. Clone this repository in the folder you would want it. Open "undernourishmentProjections.Rproj" in RStudio.
 ```bash
 git clone https://github.com/prio-data/undernourishmentProjections.git
 ```
