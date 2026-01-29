@@ -57,7 +57,11 @@ for(simulation_alternative in simulation_alternatives){
 
 	source("R/1_load_data.R")
 	source("R/2_fit_des.R")
-	#source("R/3_summary_tables.R")
+
+	if(simulation_alternative == "base"){
+		source("R/3_summary_tables.R")
+	}
+
 	source("R/4_projections.R")
 	source("R/5_plot_projections.R")
 	rm(list = setdiff(ls(), c("plotting_colors", "ragg_png", "simulation_alternatives", "simulation_alternative")))
