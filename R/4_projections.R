@@ -62,6 +62,26 @@ result[gwcode == 530 & sim == 1] |>
 
 #### --------- CV projections ---------------- ####
 
+cv_result <- simulate_newdata(
+	fit_cv1,
+	newdata = all_projections,
+	by = c("scenario", "sim"),
+	nsim = 1, # 1 simulated draw per sim in all_projections
+	type = "data",
+	include_pred = TRUE,
+	seed = 42
+)
+
+cv_result <- cv_result[year>=2024]
+#cv_result[, chain := year %% 1]
+#cv_result[, cv_sim := cv[1] + cumsum(.pdi1_cv_sim), by = .(scenario, sim, gwcode, chain)]
+cv_result[, cv_sim := cv[1] + cumsum(.pdi1_cv_sim), by = .(scenario, sim, gwcode)]
+
+cv_result[gwcode == 530 & sim == 100] |>
+	ggplot(aes(x = year, y = cv_sim, color = scenario)) + geom_line() + facet_wrap(~chain)
+
+
+
 mincv <- as.data.table(main_df)[, min(cv, na.rm = T), by = "gwcode"][, .(gwcode, mincv = V1)]
 
 if(simulation_alternative == "no_conflict_effect"){
@@ -89,12 +109,17 @@ result[(fcv + cv_csum) > 0.4, cv_adj := 0]
 result[, cv_csum := cumsum(cv_adj), by = c("scenario", "gwcode", "sim")]
 result[, cv := fcv + cv_csum]
 
-result[gwcode == 750, .(scenario, gwcode, sim, year, cv, best)] |>
-	ggplot(aes(x = year, y = cv, group = sim, color = scenario)) + geom_line() + facet_wrap(~scenario)
+#result <- merge(result, cv_result[, c("scenario", "gwcode", "year", "sim", "cv_sim")], by = c("scenario", "gwcode", "year", "sim"))
+#result$cv <- result$cv_sim
 
+result[, .(scenario, gwcode, sim, year, cv, best)] |>
+	ggplot(aes(x = year, y = cv, color = scenario)) + geom_smooth() + facet_wrap(~scenario)
+result[, .(scenario, gwcode, year, sim, cv_sim, best)] |>
+	ggplot(aes(x = year, y = cv_sim, color = scenario)) + geom_smooth() + facet_wrap(~scenario)
 
 result[, pou := poldat::estimate_undernourishment(des_sim, cv, mder, population)$prevalence_of_undernourishment]
 result[, nou := poldat::estimate_undernourishment(des_sim, cv, mder, population)$number_undernourished]
+
 
 #### Aggregated results ####
 
