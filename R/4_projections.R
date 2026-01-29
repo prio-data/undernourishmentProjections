@@ -50,6 +50,8 @@ result[gwcode == 530 & sim == 1] |>
 	ggplot(aes(x = year, y = gdppc, color = scenario)) + geom_line()
 result[gwcode == 530 & sim == 1] |>
 	ggplot(aes(x = year, y = mu, color = scenario)) + geom_line()
+result[gwcode == 530 & sim == 1] |>
+	ggplot(aes(x = year, y = .pdi1_des_sim, color = scenario)) + geom_line()
 
 result <- result[year>=2024]
 result[, des_sim := des + cumsum(.pdi1_des_sim), by = c("scenario", "gwcode", "sim")] # Simulations!
