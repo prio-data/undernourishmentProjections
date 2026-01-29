@@ -25,3 +25,14 @@ Description: Run "run_this.R"
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
+Imports: 
+    arrow,
+    data.table,
+    dplyr,
+    ggdist,
+    ggplot2,
+    gtsummary,
+    lubridate,
+    patchwork,
+    prio-data/heterolm,
+    tidyr
