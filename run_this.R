@@ -9,6 +9,7 @@ library(dplyr)
 library(lubridate)
 library(tidyr)
 library(arrow)
+library(modelsummary)
 
 plotting_colors <- c("SSP1-2.6" = "#1E9620",
 										 "SSP2-4.5" = "#4576BF",
@@ -59,6 +60,7 @@ for(simulation_alternative in simulation_alternatives){
 	source("R/2_fit_des.R")
 
 	if(simulation_alternative == "base"){
+		source("R/2_1_des_model_comparison.R")
 		source("R/3_summary_tables.R")
 	}
 
