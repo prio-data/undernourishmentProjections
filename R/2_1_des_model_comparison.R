@@ -1,3 +1,6 @@
+yt01 <- scales::yj_trans(p = 0.1)
+
+
 # Original version (varied length of moving windows based on theoretical expectations)
 fit_orig <- hetero(
 	pdiff(des, 1) ~
@@ -288,3 +291,27 @@ summary(fit_mv3)
 summary(fit_mv3_nlag)
 # Same patterns, but stronger results when considering 2-5 years than 1 year.
 # Certain effects drop off over very long time-spans. E.g., conflict.
+
+
+fit_mv3_2000 <- hetero(
+	pdiff(des, 1) ~
+		plag(pmsum(yt01$transform(best), 3), 1) +
+		plag(pdiff(tx90pgs, 3), 1) +
+		plag(pgrowth(gdppc, 3), 1) +
+		plag(pdiff(v2x_polyarchy, 3), 1) +
+		plag(pdiff(I(v2x_polyarchy^2), 3), 1) +
+		plag(pgrowth(population, 3), 1)
+	|
+		plag(yt01$transform(best), 1) +
+		plag(tx90pgs, 1) +
+		plag(log(gdppc), 1) +
+		plag(v2x_polyarchy, 1) +
+		plag(I(v2x_polyarchy^2), 1) +
+		plag(log(population), 1),
+	data = main_df[year >= 2000],
+	panel.id = ~ gwcode + year,
+	method = "BFGS"
+)
+summary(fit_mv3)
+summary(fit_mv3_2000)
+# Quite similar results

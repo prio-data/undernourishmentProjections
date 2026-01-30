@@ -37,7 +37,7 @@ if(simulation_alternative == "constant_climate"){
 
 #### ----------- DES projections ---------- ####
 result <- simulate_newdata(
-	fit1,
+	fit_des,
 	newdata = all_projections,
 	by = c("scenario", "sim"),
 	nsim = 1, # 1 simulated draw per sim in all_projections
@@ -62,60 +62,57 @@ result[gwcode == 530 & sim == 1] |>
 
 #### --------- CV projections ---------------- ####
 
-cv_result <- simulate_newdata(
-	fit_cv1,
-	newdata = all_projections,
-	by = c("scenario", "sim"),
-	nsim = 1, # 1 simulated draw per sim in all_projections
-	type = "data",
-	include_pred = TRUE,
-	seed = 42
-)
-
-cv_result <- cv_result[year>=2024]
-#cv_result[, chain := year %% 1]
-#cv_result[, cv_sim := cv[1] + cumsum(.pdi1_cv_sim), by = .(scenario, sim, gwcode, chain)]
-cv_result[, cv_sim := cv[1] + cumsum(.pdi1_cv_sim), by = .(scenario, sim, gwcode)]
-
-cv_result[gwcode == 530 & sim == 100] |>
-	ggplot(aes(x = year, y = cv_sim, color = scenario)) + geom_line() + facet_wrap(~chain)
 
 
 
-mincv <- as.data.table(main_df)[, min(cv, na.rm = T), by = "gwcode"][, .(gwcode, mincv = V1)]
+if(MANUAL_CV == TRUE){
+	if(simulation_alternative == "no_conflict_effect"){
+		result[, cv_adj := -0.003]
+	} else{
+		result[, cv_adj := 0][best >= 1000, cv_adj := 0.01]
+		result[, nowar := 0][best < 1000, nowar := 1]
+		result[, wargrp := cumsum(nowar==0)]
+		result[, nowaryears := cumsum(nowar), by = c("scenario", "gwcode", "sim", "wargrp")]
+		result[nowaryears > 0, cv_adj := -0.003]
+	}
 
-if(simulation_alternative == "no_conflict_effect"){
-	result[, cv_adj := -0.003]
+	mincv <- as.data.table(main_df)[, min(cv, na.rm = T), by = "gwcode"][, .(gwcode, mincv = V1)]
+	initial_cv <- result[, .SD[1], by = c("scenario", "gwcode", "sim")][, .(scenario, gwcode, sim, fcv = cv)]
+	result <- merge(result, initial_cv, by = c("scenario", "gwcode", "sim"))
+	result <- merge(result, mincv, by = "gwcode")
+	result[scenario == "SSP1", mincv := 0.2]
+	result[, diff_change := cv_adj != shift(cv_adj, fill = FALSE), by = c("scenario", "gwcode", "sim")]
+	result[, cvgrp := cumsum(diff_change)]
+	result[, cv_csum := cumsum(cv_adj), by = c("scenario", "gwcode", "sim", "cvgrp")]
+	result[(fcv + cv_csum - mincv) < 0, cv_adj := 0]
+	result[, cv_csum := cumsum(cv_adj), by = c("scenario", "gwcode", "sim")]
+	result[(fcv + cv_csum - mincv) < 0, cv_adj := 0]
+	result[, cv_csum := cumsum(cv_adj), by = c("scenario", "gwcode", "sim")]
+	result[(fcv + cv_csum) > 0.4, cv_adj := 0]
+	result[, cv_csum := cumsum(cv_adj), by = c("scenario", "gwcode", "sim")]
+	result[, cv := fcv + cv_csum]
 } else{
-	result[, cv_adj := 0][best >= 1000, cv_adj := 0.01]
-	result[, nowar := 0][best < 1000, nowar := 1]
-	result[, wargrp := cumsum(nowar==0)]
-	result[, nowaryears := cumsum(nowar), by = c("scenario", "gwcode", "sim", "wargrp")]
-	result[nowaryears > 0, cv_adj := -0.003]
+	cv_result <- simulate_newdata(
+		fit_cv10,
+		newdata = all_projections,
+		by = c("scenario", "sim"),
+		nsim = 1, # 1 simulated draw per sim in all_projections
+		type = "data",
+		include_pred = TRUE,
+		seed = 42
+	)
+
+	cv_result <- cv_result[year>=2024]
+	#cv_result[, chain := year %% 1]
+	#cv_result[, cv_sim := cv[1] + cumsum(.pdi1_cv_sim), by = .(scenario, sim, gwcode, chain)]
+	cv_result[, cv_sim := cv[1] + cumsum(.pdi1_cv_sim), by = .(scenario, sim, gwcode)]
+
+	result <- merge(result, cv_result[, c("scenario", "gwcode", "year", "sim", "cv_sim")], by = c("scenario", "gwcode", "year", "sim"))
+	result$cv <- result$cv_sim
 }
-
-initial_cv <- result[, .SD[1], by = c("scenario", "gwcode", "sim")][, .(scenario, gwcode, sim, fcv = cv)]
-result <- merge(result, initial_cv, by = c("scenario", "gwcode", "sim"))
-result <- merge(result, mincv, by = "gwcode")
-result[scenario == "SSP1", mincv := 0.2]
-result[, diff_change := cv_adj != shift(cv_adj, fill = FALSE), by = c("scenario", "gwcode", "sim")]
-result[, cvgrp := cumsum(diff_change)]
-result[, cv_csum := cumsum(cv_adj), by = c("scenario", "gwcode", "sim", "cvgrp")]
-result[(fcv + cv_csum - mincv) < 0, cv_adj := 0]
-result[, cv_csum := cumsum(cv_adj), by = c("scenario", "gwcode", "sim")]
-result[(fcv + cv_csum - mincv) < 0, cv_adj := 0]
-result[, cv_csum := cumsum(cv_adj), by = c("scenario", "gwcode", "sim")]
-result[(fcv + cv_csum) > 0.4, cv_adj := 0]
-result[, cv_csum := cumsum(cv_adj), by = c("scenario", "gwcode", "sim")]
-result[, cv := fcv + cv_csum]
-
-#result <- merge(result, cv_result[, c("scenario", "gwcode", "year", "sim", "cv_sim")], by = c("scenario", "gwcode", "year", "sim"))
-#result$cv <- result$cv_sim
 
 result[, .(scenario, gwcode, sim, year, cv, best)] |>
 	ggplot(aes(x = year, y = cv, color = scenario)) + geom_smooth() + facet_wrap(~scenario)
-result[, .(scenario, gwcode, year, sim, cv_sim, best)] |>
-	ggplot(aes(x = year, y = cv_sim, color = scenario)) + geom_smooth() + facet_wrap(~scenario)
 
 result[, pou := poldat::estimate_undernourishment(des_sim, cv, mder, population)$prevalence_of_undernourishment]
 result[, nou := poldat::estimate_undernourishment(des_sim, cv, mder, population)$number_undernourished]

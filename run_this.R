@@ -49,6 +49,9 @@ simulation_alternatives <- c("base", "constant_democracy", "constant_climate", "
 # constant_climate is a counter-factual scenario that estimates what food security projections would look like (compared to base) if:
 # 1. climate stays constant at 2023-levels
 
+# CV projections
+MANUAL_CV <- FALSE
+
 #simulation_alternative <- "base"
 for(simulation_alternative in simulation_alternatives){
 	rm(list = setdiff(ls(), c("plotting_colors", "ragg_png", "simulation_alternatives", "simulation_alternative")))

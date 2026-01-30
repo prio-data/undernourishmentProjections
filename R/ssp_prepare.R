@@ -38,17 +38,26 @@ source("R/custom_gwcode_matches.R")
 
 clim <- read_csv("data_raw/agro_climate_data/clim_growingseason_country_year_allssps.csv") |>
   dplyr::filter(year >= 2025) |>
-  tidyr::pivot_longer(cols = starts_with("tx90p"), names_to = "scenario", values_to = "tx90pgs") |>
-  dplyr::mutate(scenario =
-                  case_when(scenario == "tx90p_126_gs" ~ "SSP1",
-                            scenario == "tx90p_245_gs" ~ "SSP2",
-                            scenario == "tx90p_370_gs" ~ "SSP3",
-                            scenario == "tx90p_585_gs" ~ "SSP5"))
+  tidyr::pivot_longer(cols = starts_with(c("tx90p", "rx5day", "spi6", "spei6")), names_to = "scenario_var", values_to = "value") |>
+	dplyr::mutate(
+		variable_name = stringr::str_extract(scenario_var, "^[^_]+"),
+		scenario = case_when(
+			stringr::str_detect(scenario_var, "_126_") ~ "SSP1",
+			stringr::str_detect(scenario_var, "_245_") ~ "SSP2",
+			stringr::str_detect(scenario_var, "_370_") ~ "SSP3",
+			stringr::str_detect(scenario_var, "_585_") ~ "SSP5"
+		)
+	)
 ssp4 <- clim |> dplyr::filter(scenario == "SSP3") |>
   dplyr::mutate(scenario = "SSP4")
 clim <- dplyr::bind_rows(clim, ssp4) |>
   dplyr::rename(gwcode = country_id) |>
-  dplyr::select(scenario, gwcode, year, tx90pgs)
+	dplyr::select(-scenario_var) %>%
+	tidyr::pivot_wider(
+		names_from = variable_name,
+		values_from = value
+	) |>
+  dplyr::select(scenario, gwcode, year, tx90pgs = tx90p, rx5daygs = rx5day, spi6gs = spi6, spei6gs = spei6)
 
 temp <- readr::read_csv("data_raw/country_avg_temperature.csv") |>
   dplyr::filter(year >= 2024) |>
