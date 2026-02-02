@@ -29,10 +29,29 @@ if(simulation_alternative == "constant_democracy"){
 }
 
 if(simulation_alternative == "constant_climate"){
-	# Set democracy-levels to 2023
-	all_projections[year >= 2024, tx90pgs := NA_real_]
-	all_projections[, tx90pgs := nafill(tx90pgs, type = "locf"),
-									by = .(scenario, sim, gwcode)]
+	# Set climate-levels to average 2023 levels (climate scenarios start in 2015, but do not deviate significantly over the first 10 years.)
+	baseline <- all_projections[year == 2023,
+															.(tx90pgs = mean(tx90pgs, na.rm = TRUE),
+																rx5daygs = mean(rx5daygs, na.rm = TRUE),
+																spei6gs = mean(spei6gs, na.rm = TRUE),
+																tas = mean(tas, na.rm = TRUE)),
+															by = .(gwcode)]
+
+	all_projections[baseline, on = .(gwcode), `:=`(
+		tx90pgs_base = i.tx90pgs,
+		rx5daygs_base = i.rx5daygs,
+		spei6gs_base = i.spei6gs,
+		tas_base = i.tas
+	)]
+
+	all_projections[year >= 2024, `:=`(
+		tx90pgs = tx90pgs_base,
+		rx5daygs = rx5daygs_base,
+		spei6gs = spei6gs_base,
+		tas = tas_base
+	)]
+
+	all_projections[, c("tx90pgs_base", "rx5daygs_base", "spei6gs_base", "tas_base") := NULL]
 }
 
 #### ----------- DES projections ---------- ####
@@ -137,6 +156,7 @@ global_agg <- result[, .(
 	gdppc = weighted.mean(gdppc, population, na.rm = TRUE),
 	v2x_polyarchy = weighted.mean(v2x_polyarchy, population, na.rm = TRUE),
 	tx90pgs = weighted.mean(tx90pgs, population, na.rm = TRUE),
+	rx5daygs = weighted.mean(rx5daygs, population, na.rm = TRUE),
 	population = sum(population, na.rm = TRUE)
 ), by = .(scenario, year, sim)]
 global_agg[, total_des := des * population]
@@ -156,6 +176,7 @@ global_hist <- global_hist[, .(
 	gdppc = weighted.mean(gdppc, population, na.rm = TRUE),
 	v2x_polyarchy = weighted.mean(v2x_polyarchy, population, na.rm = TRUE),
 	tx90pgs = weighted.mean(tx90pgs, population, na.rm = TRUE),
+	rx5daygs = weighted.mean(rx5daygs, population, na.rm = TRUE),
 	population = sum(population, na.rm = TRUE)
 ),
 by = year

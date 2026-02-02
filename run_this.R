@@ -55,9 +55,9 @@ cv_approaches <- c("regression", "manual")
 for(cv_approach in cv_approaches){
 	for(simulation_alternative in simulation_alternatives){
 		rm(list = setdiff(ls(), c("plotting_colors", "ragg_png", "simulation_alternatives", "simulation_alternative", "cv_approaches", "cv_approach")))
-		dir.create(file.path("results", simulation_alternative, cv_approach))
-		dir.create(file.path("tables", simulation_alternative, cv_approach))
-		dir.create(file.path("figures", simulation_alternative, cv_approach))
+		dir.create(file.path("results", simulation_alternative, cv_approach), recursive = T)
+		dir.create(file.path("tables", simulation_alternative, cv_approach), recursive = T)
+		dir.create(file.path("figures", simulation_alternative, cv_approach), recursive = T)
 
 		source("R/1_load_data.R")
 		source("R/2_fit_des.R")
@@ -70,10 +70,10 @@ for(cv_approach in cv_approaches){
 
 		source("R/5_projections.R")
 		source("R/6_plot_projections.R")
-		source("R/7_comparison.R")
 		rm(list = setdiff(ls(), c("plotting_colors", "ragg_png", "simulation_alternatives", "simulation_alternative", "cv_approaches", "cv_approach")))
 	}
 }
 
+source("R/7_comparison.R")
 
 

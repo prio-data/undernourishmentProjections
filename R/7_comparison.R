@@ -8,7 +8,7 @@ global_agg <- dplyr::bind_rows(global_agg, .id = "approach")
 global_hist <- readRDS("results/global_hist.rds")
 
 # Aggregate across simulations
-cols <- c("nou", "pou", "des", "mder", "cv", "best", "v2x_polyarchy", "gdppc", "population", "tx90pgs")
+cols <- c("nou", "pou", "des", "mder", "cv", "best", "v2x_polyarchy", "gdppc", "population", "tx90pgs", "rx5daygs")
 to_table <- global_agg[, lapply(.SD, median, na.rm = TRUE),
 					 by = .(approach, scenario, year),
 					 .SDcols = cols]
@@ -25,7 +25,8 @@ setnames(to_table, c(
 	"v2x_polyarchy" = "DEM",
 	"gdppc"         = "GDPPC",
 	"population"    = "POP",
-	"tx90pgs"       = "TX90"
+	"tx90pgs"       = "TX90",
+	"rx5daygs"      = "RX5DAY"
 ))
 
 for(simulation_alternative in simulation_alternatives){
@@ -35,7 +36,7 @@ for(simulation_alternative in simulation_alternatives){
 		tmp[[i]] |> ungroup() |> dplyr::select(-scenario, -approach)  |>
 			gt::gt() |>
 			gt::fmt_number(c("NUN", "DES", "MDER", "BRD", "GDPPC", "POP"), decimals = 0) |>
-			gt::fmt_number(c("PoU", "CV", "DEM", "TX90"), decimals = 2) |>
+			gt::fmt_number(c("PoU", "CV", "DEM", "TX90", "RX5DAY"), decimals = 2) |>
 			gt::tab_header(paste("Median global population-weighted results,", names(tmp)[i], "Approach:", simulation_alternative)) |>
 			gt::gtsave(file.path("tables", simulation_alternative, paste0("main_pou_", names(tmp[i]), ".tex")))
 	}
@@ -53,7 +54,7 @@ summarize_quantiles <- function(dt, var, by_cols = c("approach", "scenario", "ye
 }
 
 # Combine multiple variables
-plots_data <- rbindlist(lapply(c("gdppc", "pou", "des", "nou", "cv", "tx90pgs"), function(v) {
+plots_data <- rbindlist(lapply(c("gdppc", "pou", "des", "nou", "cv", "tx90pgs", "rx5daygs"), function(v) {
 	summarize_quantiles(global_agg, v)
 }))
 
@@ -103,8 +104,9 @@ DES <- base_plot("des", "DES")
 CV <- base_plot("cv", "CV")
 GDPPC <- base_plot("gdppc", "GDPPC")
 TX90 <- base_plot("tx90pgs", "TX90")
+RX5DAY <- base_plot("rx5daygs", "RX5DAY")
 
-GDPPC / CV / DES / POU / NOU / TX90 + plot_layout(ncol = 1, guides = "collect", axes = "collect") &
+GDPPC / CV / DES / POU / NOU / TX90 / RX5DAY + plot_layout(ncol = 1, guides = "collect", axes = "collect") &
 	theme_bw(base_size = 24) &
 	theme(legend.position = "bottom",
 				legend.box = "vertical") &
@@ -120,7 +122,7 @@ DES <- plot_without_historic("des", "DES")
 CV <- plot_without_historic("cv", "CV")
 GDPPC <- plot_without_historic("gdppc", "GDPPC")
 
-GDPPC / CV / DES / POU / NOU / TX90 + plot_layout(ncol = 1, guides = "collect", axes = "collect") &
+GDPPC / CV / DES / POU / NOU / TX90 / RX5DAY + plot_layout(ncol = 1, guides = "collect", axes = "collect") &
 	theme_bw(base_size = 24) &
 	theme(legend.position = "bottom",
 				legend.box = "vertical") &
@@ -194,8 +196,44 @@ DES + POU + NOU + plot_layout(design = layout, guides = "collect", axes = "colle
 	theme(legend.position = "bottom") &
 	scale_color_manual("Scenario", values = plotting_colors)
 ragg_png <- function(...) ragg::agg_png(..., res = 300, units = "in")
-ggsave("figures/approach_comparison_diff.png", device = ragg_png,  width = 12, height = 4, scale = 1.5)
+ggsave("figures/approach_comparison_no_conflict_diff.png", device = ragg_png,  width = 12, height = 4, scale = 1.5)
 
+
+POU <- diff_plot("pou", "PoU", "constant_democracy")
+NOU <- diff_plot("nou", "Under-\nnourished", "constant_democracy")
+GDPPC <- diff_plot("gdppc", "GDPPC", "constant_democracy")
+DES <- diff_plot("des", "DES", "constant_democracy")
+CV <- diff_plot("cv", "CV", "constant_democracy")
+
+layout <- "
+CCAA
+CCBB
+"
+
+DES + POU + NOU + plot_layout(design = layout, guides = "collect", axes = "collect") &
+	theme_bw(base_size = 24) &
+	theme(legend.position = "bottom") &
+	scale_color_manual("Scenario", values = plotting_colors)
+ragg_png <- function(...) ragg::agg_png(..., res = 300, units = "in")
+ggsave("figures/approach_comparison_constant_democracy_diff.png", device = ragg_png,  width = 12, height = 4, scale = 1.5)
+
+POU <- diff_plot("pou", "PoU", "constant_climate")
+NOU <- diff_plot("nou", "Under-\nnourished", "constant_climate")
+GDPPC <- diff_plot("gdppc", "GDPPC", "constant_climate")
+DES <- diff_plot("des", "DES", "constant_climate")
+CV <- diff_plot("cv", "CV", "constant_climate")
+
+layout <- "
+CCAA
+CCBB
+"
+
+DES + POU + NOU + plot_layout(design = layout, guides = "collect", axes = "collect") &
+	theme_bw(base_size = 24) &
+	theme(legend.position = "bottom") &
+	scale_color_manual("Scenario", values = plotting_colors)
+ragg_png <- function(...) ragg::agg_png(..., res = 300, units = "in")
+ggsave("figures/approach_comparison_constant_climate_diff.png", device = ragg_png,  width = 12, height = 4, scale = 1.5)
 
 # layout <- "
 # EEEEAABB
