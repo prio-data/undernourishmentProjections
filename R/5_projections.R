@@ -112,7 +112,7 @@ if(cv_approach == "manual"){
 	result[, cv := fcv + cv_csum]
 } else{
 	cv_result <- simulate_newdata(
-		fit_cv10,
+		fit_cv9,
 		newdata = all_projections,
 		by = c("scenario", "sim"),
 		nsim = 1, # 1 simulated draw per sim in all_projections
@@ -133,6 +133,10 @@ if(cv_approach == "manual"){
 result[, .(scenario, gwcode, sim, year, cv, best)] |>
 	ggplot(aes(x = year, y = cv, color = scenario)) + geom_smooth() + facet_wrap(~scenario)
 
+result[gwcode == 530, .(scenario, sim, year, cv, best)] |>
+	ggplot(aes(x = year, y = cv, color = scenario)) + geom_smooth() + facet_wrap(~scenario, ncol = 1)
+
+
 result[, pou := poldat::estimate_undernourishment(des_sim, cv, mder, population)$prevalence_of_undernourishment]
 result[, nou := poldat::estimate_undernourishment(des_sim, cv, mder, population)$number_undernourished]
 
@@ -151,6 +155,7 @@ global_agg <- result[, .(
 	des = weighted.mean(des_sim, population, na.rm = TRUE),
 	mder = weighted.mean(mder, population, na.rm = TRUE),
 	cv = weighted.mean(cv, population, na.rm = TRUE),
+	cv_non_weight = mean(cv, na.rm = TRUE),
 	best = sum(best, na.rm = TRUE),
 	gdppc_non_weight = mean(gdppc, na.rm = TRUE),
 	gdppc = weighted.mean(gdppc, population, na.rm = TRUE),
@@ -171,6 +176,7 @@ global_hist <- global_hist[, .(
 	des = weighted.mean(des, population, na.rm = TRUE),
 	mder = weighted.mean(mder, population, na.rm = TRUE),
 	cv = weighted.mean(cv, population, na.rm = TRUE),
+	cv_non_weight = mean(cv, na.rm = TRUE),
 	best = sum(best, na.rm = TRUE),
 	gdppc_non_weight = mean(gdppc, na.rm = TRUE),
 	gdppc = weighted.mean(gdppc, population, na.rm = TRUE),

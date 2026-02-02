@@ -54,7 +54,7 @@ summarize_quantiles <- function(dt, var, by_cols = c("approach", "scenario", "ye
 }
 
 # Combine multiple variables
-plots_data <- rbindlist(lapply(c("gdppc", "pou", "des", "nou", "cv", "tx90pgs", "rx5daygs"), function(v) {
+plots_data <- rbindlist(lapply(c("gdppc", "pou", "des", "nou", "cv", "cv_non_weight", "tx90pgs", "rx5daygs"), function(v) {
 	summarize_quantiles(global_agg, v)
 }))
 
