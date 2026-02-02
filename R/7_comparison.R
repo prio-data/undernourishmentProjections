@@ -1,11 +1,11 @@
 
 
-global_agg_fnames <- file.path("results", simulation_alternatives, "global_agg.rds")
+global_agg_fnames <- file.path("results", simulation_alternatives, "regression", "global_agg.rds")
 global_agg <- lapply(global_agg_fnames, readRDS)
 names(global_agg) <- simulation_alternatives
 global_agg <- dplyr::bind_rows(global_agg, .id = "approach")
 
-global_hist <- readRDS("results/base/global_hist.rds")
+global_hist <- readRDS("results/global_hist.rds")
 
 # Aggregate across simulations
 cols <- c("nou", "pou", "des", "mder", "cv", "best", "v2x_polyarchy", "gdppc", "population", "tx90pgs")

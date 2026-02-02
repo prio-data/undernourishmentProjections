@@ -65,7 +65,7 @@ result[gwcode == 530 & sim == 1] |>
 
 
 
-if(MANUAL_CV == TRUE){
+if(cv_approach == "manual"){
 	if(simulation_alternative == "no_conflict_effect"){
 		result[, cv_adj := -0.003]
 	} else{
@@ -141,7 +141,7 @@ global_agg <- result[, .(
 ), by = .(scenario, year, sim)]
 global_agg[, total_des := des * population]
 
-saveRDS(global_agg, file.path("results", simulation_alternative, "global_agg.rds"))
+saveRDS(global_agg, file.path("results", simulation_alternative, cv_approach, "global_agg.rds"))
 
 global_hist <- main_df[gwcode %in% unique(result$gwcode)]
 global_hist[, nou := poldat::estimate_undernourishment(des, cv, mder, population)$number_undernourished]
@@ -163,4 +163,4 @@ by = year
 global_hist[, total_des := des * population]
 global_hist <- na.omit(global_hist)
 
-saveRDS(global_hist, file.path("results", simulation_alternative, "global_hist.rds"))
+saveRDS(global_hist, file.path("results", "global_hist.rds"))

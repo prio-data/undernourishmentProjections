@@ -49,7 +49,7 @@ F1 <- ggplot(last_observed) +
 	theme_bw(base_size = 24) + labs(subtitle = "PoU 2023")
 
 F1 + A + B + C + D + E + plot_layout(guides = "collect")
-ggsave(file.path("figures", simulation_alternative, "pou_map.png"), device = ragg_png,  width = 12, height = 5, scale = 1.5)
+ggsave(file.path("figures", simulation_alternative, cv_approach, "pou_map.png"), device = ragg_png,  width = 12, height = 5, scale = 1.5)
 
 
 to_plot <- result[gwcode == 475 & sim <10, -"des"]
@@ -64,7 +64,7 @@ ggplot(to_plot) +
 			 x = "Year",
 			 y = "DES") +
 	theme_bw(base_size = 16) + theme(legend.position = "bottom")
-ggsave(file.path("figures", simulation_alternative, "des_nigeria_example.png"), device = ragg_png,  width = 12, height = 12)
+ggsave(file.path("figures", simulation_alternative, cv_approach, "des_nigeria_example.png"), device = ragg_png,  width = 12, height = 12)
 
 
 
@@ -244,11 +244,11 @@ MDER <- ggplot() +
 
 
 #### Global hunger plots (Main figure in article) ####
-((MDER + CV + DES) / NOU & xlab("Year")) / POU_BOX +
+((MDER + DES + CV) / NOU & xlab("Year")) / POU_BOX +
 	plot_layout(ncol = 1, heights = c(1, 2, 2), guides = "collect", axes = "collect") &
 	theme_bw(base_size = 24) &
 	theme(legend.position = "bottom")
-ggsave(file.path("figures", simulation_alternative, "evolution_of_global_hunger.png"), device = ragg_png,  width = 12, height = 8, scale = 1.5)
+ggsave(file.path("figures", simulation_alternative, cv_approach, "evolution_of_global_hunger.png"), device = ragg_png,  width = 12, height = 8, scale = 1.5)
 
 #### Socio-political drivers plot ####
 EDI + BRD + GDPPC + plot_layout(ncol = 1, guides = "collect") +
@@ -258,7 +258,7 @@ EDI + BRD + GDPPC + plot_layout(ncol = 1, guides = "collect") +
 				plot.subtitle = element_text(hjust = 0.5, size = 14),
 				plot.caption = element_text(hjust = 0.5, size = 10),
 				legend.position = "bottom")
-ggsave(file.path("figures", simulation_alternative, "socio_political_drivers.png"), device = ragg_png,  width = 10, height = 12)
+ggsave(file.path("figures", simulation_alternative, cv_approach, "socio_political_drivers.png"), device = ragg_png,  width = 10, height = 12)
 
 #### PoU detailed projections ####
 POU + NOU + DES + DES_TOT + plot_layout(ncol = 2, guides = "collect") +
@@ -268,7 +268,7 @@ POU + NOU + DES + DES_TOT + plot_layout(ncol = 2, guides = "collect") +
 				plot.subtitle = element_text(hjust = 0.5, size = 14),
 				plot.caption = element_text(hjust = 0.5, size = 10),
 				legend.position = "bottom")
-ggsave(file.path("figures", simulation_alternative, "pou_detailed_projections.png"), device = ragg_png,  width = 12, height = 12)
+ggsave(file.path("figures", simulation_alternative, cv_approach, "pou_detailed_projections.png"), device = ragg_png,  width = 12, height = 12)
 
 #### Example projections for specific countries ####
 result[(gwcode %in% c(2, 475, 710)) & sim < 10] |>
@@ -279,7 +279,7 @@ result[(gwcode %in% c(2, 475, 710)) & sim < 10] |>
 			 x = "Year",
 			 y = "EDI") +
 	theme_bw(base_size = 16) + theme(legend.position = "bottom")
-ggsave(file.path("figures", simulation_alternative, "edi_usa_nigeria_china_example.png"), device = ragg_png,  width = 12, height = 12)
+ggsave(file.path("figures", simulation_alternative, cv_approach, "edi_usa_nigeria_china_example.png"), device = ragg_png,  width = 12, height = 12)
 
 
 result[(gwcode %in% c(2, 475, 710)) & sim < 10] |>
@@ -290,7 +290,7 @@ result[(gwcode %in% c(2, 475, 710)) & sim < 10] |>
 			 x = "Year",
 			 y = "BRD") +
 	theme_bw(base_size = 16) + theme(legend.position = "bottom")
-ggsave(file.path("figures", simulation_alternative, "conflict_usa_nigeria_china_example.png"), device = ragg_png,  width = 12, height = 12)
+ggsave(file.path("figures", simulation_alternative, cv_approach, "conflict_usa_nigeria_china_example.png"), device = ragg_png,  width = 12, height = 12)
 
 
 result[(gwcode %in% c(2, 475, 710)) & sim < 10] |>
@@ -301,7 +301,7 @@ result[(gwcode %in% c(2, 475, 710)) & sim < 10] |>
 			 x = "Year",
 			 y = "GDPPC") +
 	theme_bw(base_size = 16) + theme(legend.position = "bottom")
-ggsave(file.path("figures", simulation_alternative, "gdppc_usa_nigeria_china_example.png"), device = ragg_png,  width = 12, height = 12)
+ggsave(file.path("figures", simulation_alternative, cv_approach, "gdppc_usa_nigeria_china_example.png"), device = ragg_png,  width = 12, height = 12)
 
 #### Alternative plot layouts ####
 MDER + plot_layout(ncol = 1, guides = "collect") +
@@ -311,7 +311,7 @@ MDER + plot_layout(ncol = 1, guides = "collect") +
 				plot.caption = element_text(hjust = 0.5, size = 10),
 				legend.position = "bottom") &
 	scale_color_manual(values = plotting_colors)
-ggsave(file.path("figures", simulation_alternative, "mder_projections.png"), device = ragg_png,  width = 12, height = 12)
+ggsave(file.path("figures", simulation_alternative, cv_approach, "mder_projections.png"), device = ragg_png,  width = 12, height = 12)
 
 CV + plot_layout(ncol = 1, guides = "collect") +
 	theme_bw(base_size = 16) &
@@ -319,7 +319,7 @@ CV + plot_layout(ncol = 1, guides = "collect") +
 				plot.subtitle = element_text(hjust = 0.5, size = 14),
 				plot.caption = element_text(hjust = 0.5, size = 10),
 				legend.position = "bottom")
-ggsave(file.path("figures", simulation_alternative, "cv_projections.png"), device = ragg_png,  width = 12, height = 12)
+ggsave(file.path("figures", simulation_alternative, cv_approach, "cv_projections.png"), device = ragg_png,  width = 12, height = 12)
 
 
 # Average number of battle-related deaths per year per scenario
