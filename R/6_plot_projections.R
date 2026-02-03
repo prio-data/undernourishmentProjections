@@ -79,6 +79,7 @@ POU_BOX <- ggplot(to_plot, aes(y = scenario, x = pou, fill = scenario)) +
 	geom_vline(xintercept = 0.025, linetype = "dashed") + # SDG Zero hunger goal
 	geom_vline(xintercept = 0.091, linetype = "dotted") + # Last observed according to FAO
 	scale_fill_manual("Scenario", values = plotting_colors, guide = "none") +
+	scale_x_continuous(breaks = c(0.025, 0.05, 0.075, 0.1, 0.125, 0.15)) +
 	theme_bw(base_size = 24)
 
 #### CV
@@ -126,6 +127,7 @@ DES <- ggplot() +
 	ylab("DES") +
 	scale_color_manual(values = plotting_colors, guide = "none") +
 	scale_fill_manual(values = plotting_colors, guide = "none") +
+	scale_y_continuous(breaks = c(2750, 2900, 3050, 3200)) +
 	theme_bw()
 
 
@@ -168,7 +170,8 @@ NOU <- ggplot() +
 	ylab("Undernourished") +
 	scale_color_manual("Scenario", values = plotting_colors) +
 	scale_fill_manual("Scenario", values = plotting_colors) +
-	scale_x_continuous(breaks = c(2024, 2050)) +
+	scale_x_continuous(breaks = c(2000, 2024, 2050), expand = expansion(mult = 0.1)) +
+	scale_y_continuous(breaks = c(250, 500, 750, 1000), limits = c(250, max(to_plot$q975))) +
 	theme_bw() +
 	facet_wrap(~scenario, ncol = 5)
 

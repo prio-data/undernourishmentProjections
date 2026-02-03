@@ -73,8 +73,6 @@ plots_data[year == 2050 & variable == "nou", -c("s_a", "variable")] |>
 	gt::tab_header("Undernourished quantiles in 2050 from population-weighted results") |>
 	gt::gtsave(paste0("tables/nou_quantiles_2050.tex"))
 
-prettyname <- c("PoU")
-
 base_plot <- function(varname, prettyname) {
 	ggplot() +
 	geom_line(data = global_hist, aes(x = year, y = .data[[varname]]), color = "black") +
@@ -199,6 +197,18 @@ ragg_png <- function(...) ragg::agg_png(..., res = 300, units = "in")
 ggsave("figures/approach_comparison_no_conflict_diff.png", device = ragg_png,  width = 12, height = 4, scale = 1.5)
 
 
+layout <- "
+EEEEAABB
+EEEECCDD
+"
+NOU + CV + DES + GDPPC + POU + plot_layout(design = layout, guides = "collect", axes = "collect") &
+	theme_bw(base_size = 24) &
+	theme(legend.position = "bottom") &
+	scale_color_manual("Scenario", values = plotting_colors)
+ragg_png <- function(...) ragg::agg_png(..., res = 300, units = "in")
+ggsave("figures/approach_comparison_no_conflict_diff_expanded.png", device = ragg_png,  width = 12, height = 4, scale = 1.5)
+
+
 POU <- diff_plot("pou", "PoU", "constant_democracy")
 NOU <- diff_plot("nou", "Under-\nnourished", "constant_democracy")
 GDPPC <- diff_plot("gdppc", "GDPPC", "constant_democracy")
@@ -234,28 +244,3 @@ DES + POU + NOU + plot_layout(design = layout, guides = "collect", axes = "colle
 	scale_color_manual("Scenario", values = plotting_colors)
 ragg_png <- function(...) ragg::agg_png(..., res = 300, units = "in")
 ggsave("figures/approach_comparison_constant_climate_diff.png", device = ragg_png,  width = 12, height = 4, scale = 1.5)
-
-# layout <- "
-# EEEEAABB
-# EEEECCDD
-# "
-# NOU + CV + DES + GDPPC + POU + plot_layout(design = layout, guides = "collect", axes = "collect") &
-# 	theme_bw(base_size = 24) &
-# 	theme(legend.position = "bottom") &
-# 	scale_color_manual("Scenario", values = plotting_colors)
-# ragg_png <- function(...) ragg::agg_png(..., res = 300, units = "in")
-# ggsave("first_sub/figures/base/figure5_alt.png", device = ragg_png,  width = 12, height = 4, scale = 1.5)
-
-
-# layout <- "
-# CCAA
-# CCBB
-# "
-#
-# NOU + DES + POU + plot_layout(design = layout, guides = "collect", axes = "collect") &
-# 	theme_bw(base_size = 24) &
-# 	theme(legend.position = "bottom") &
-# 	scale_color_manual("Scenario", values = plotting_colors)
-# ragg_png <- function(...) ragg::agg_png(..., res = 300, units = "in")
-# ggsave("first_sub/figures/base/figure5_alt_const_dem.png", device = ragg_png,  width = 12, height = 4, scale = 1.5)
-

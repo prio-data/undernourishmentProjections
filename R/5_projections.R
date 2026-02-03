@@ -1,6 +1,65 @@
 # See prepare_projections.R
 all_projections <- arrow::read_parquet("data/base_projections.parquet")
 
+all_projections[scenario == "SSP1"]$scenario <- "SSP1-2.6"
+all_projections[scenario == "SSP2"]$scenario <- "SSP2-4.5"
+all_projections[scenario == "SSP3"]$scenario <- "SSP3-7.0"
+all_projections[scenario == "SSP4"]$scenario <- "SSP4-7.0"
+all_projections[scenario == "SSP5"]$scenario <- "SSP5-8.5"
+
+# Just do once
+if(simulation_alternative == "base" & cv_approach == "regression"){
+	log10_1p_trans <- scales::new_transform(
+		name = "log10_1p",
+		transform = function(x) log10(1 + x),
+		inverse = function(x) 10^x - 1,
+		domain = c(0, Inf)
+	)
+
+	agg_df <- all_projections[year >= 2024, .(best = mean(best), v2x_polyarchy = mean(v2x_polyarchy)), .(scenario, gwcode, year)]
+
+	scenarios <- names(plotting_colors)
+
+	brd_plot <- function(s){
+		to_plot <- rbindlist(list(main_df[year >= 1990, c("gwcode", "year", "best", "v2x_polyarchy")], agg_df[scenario == s, -"scenario"]))
+		to_plot$scenario <- ifelse(to_plot$year >= 2024, s, "historical")
+		plotting_colors_hist <- c(plotting_colors, "historical" = "gray50")
+
+		ggplot(to_plot, aes(x = year, y = best, color = scenario)) +
+			geom_point(shape = 20, size = 0.3) +
+			geom_smooth(se = FALSE, color = "black", linewidth = 1, linetype = "dashed") +
+			scale_y_continuous("BRD", transform = log10_1p_trans, breaks = c(0, 10, 100, 1000, 10000, 100000),
+												 labels = c("0", "10", expression(10^2), expression(10^3),expression(10^4), expression(10^5))) +
+			scale_color_manual(values = plotting_colors_hist) +
+			scale_x_continuous("Year", breaks = c(1990, 2024, 2050)) +
+			theme_bw(base_size = 24) + theme(legend.position = "none")
+	}
+
+	dem_plot <- function(s){
+		to_plot <- rbindlist(list(main_df[year >= 1990, c("gwcode", "year", "best", "v2x_polyarchy")], agg_df[scenario == s, -"scenario"]))
+		to_plot$scenario <- ifelse(to_plot$year >= 2024, s, "historical")
+		plotting_colors_hist <- c(plotting_colors, "historical" = "gray50")
+
+		ggplot(to_plot, aes(x = year, y = v2x_polyarchy, color = scenario)) +
+			geom_point(shape = 20, size = 0.3) +
+			geom_smooth(se = FALSE, color = "black", linewidth = 1, linetype = "dashed") +
+			ylab("DEM") +
+			scale_color_manual(values = plotting_colors_hist) +
+			scale_x_continuous("Year", breaks = c(1990, 2024, 2050)) +
+			theme_bw(base_size = 24) + theme(legend.position = "none")
+	}
+
+	BRD_PLOTS <- lapply(scenarios, brd_plot)
+	DEM_PLOTS <- lapply(scenarios, dem_plot)
+
+	BRD_PLOTS[[1]] + BRD_PLOTS[[2]] + BRD_PLOTS[[3]] + BRD_PLOTS[[4]] + BRD_PLOTS[[5]] +
+	DEM_PLOTS[[1]] + DEM_PLOTS[[2]] + DEM_PLOTS[[3]] + DEM_PLOTS[[4]] + DEM_PLOTS[[5]] + plot_layout(axes = "collect", ncol = 5)
+
+	ggsave(file.path("figures", simulation_alternative, "brd_dem_projections.png"), device = ragg_png,  width = 12, height = 4, scale = 1.5)
+
+}
+
+
 #### Economic growth adjustments ####
 
 if(simulation_alternative != "no_conflict_effect"){
@@ -143,11 +202,11 @@ result[, nou := poldat::estimate_undernourishment(des_sim, cv, mder, population)
 
 #### Aggregated results ####
 
-result[scenario == "SSP1"]$scenario <- "SSP1-2.6"
-result[scenario == "SSP2"]$scenario <- "SSP2-4.5"
-result[scenario == "SSP3"]$scenario <- "SSP3-7.0"
-result[scenario == "SSP4"]$scenario <- "SSP4-7.0"
-result[scenario == "SSP5"]$scenario <- "SSP5-8.5"
+# result[scenario == "SSP1"]$scenario <- "SSP1-2.6"
+# result[scenario == "SSP2"]$scenario <- "SSP2-4.5"
+# result[scenario == "SSP3"]$scenario <- "SSP3-7.0"
+# result[scenario == "SSP4"]$scenario <- "SSP4-7.0"
+# result[scenario == "SSP5"]$scenario <- "SSP5-8.5"
 
 global_agg <- result[, .(
 	nou = sum(nou, na.rm = TRUE),

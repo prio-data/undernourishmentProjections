@@ -113,6 +113,26 @@ if(simulation_alternative == "base" & cv_approach == "regression"){
 		plag(v2x_polyarchy, 1) +
 		plag(I(v2x_polyarchy^2), 1)
 
+	f10 <- pdiff(cv, nlag) ~
+		plag(I(best>1000), 1) +
+		plag(pgrowth(gdppc, 3), 1) +
+		plag(pdiff(tx90pgs, 3), 1) |
+		plag(yt01$transform(best), 1) +
+		plag(log(gdppc), nlag) +
+		plag(v2x_polyarchy, 1) +
+		plag(I(v2x_polyarchy^2), 1)
+
+	f11 <- pdiff(cv, nlag) ~
+		plag(I(best>1000), 1) +
+		plag(pgrowth(gdppc, 3), 1) +
+		plag(pdiff(tx90pgs, 3), 1) |
+		plag(yt01$transform(best), 1) +
+		plag(log(gdppc), nlag) +
+		plag(v2x_polyarchy, 1) +
+		plag(I(v2x_polyarchy^2), 1) +
+		plag(tx90pgs, 1) +
+		plag(rx5daygs, 1)
+
 
 	fit_cv1 <- hetero(f1, data = main_df, panel.id = ~ gwcode + year, method = "BFGS")
 	fit_cv2 <- hetero(f2, data = main_df, panel.id = ~ gwcode + year, method = "BFGS")
@@ -123,8 +143,10 @@ if(simulation_alternative == "base" & cv_approach == "regression"){
 	fit_cv7 <- hetero(f7, data = main_df, panel.id = ~ gwcode + year, method = "BFGS")
 	fit_cv8 <- hetero(f8, data = main_df, panel.id = ~ gwcode + year, method = "BFGS")
 	fit_cv9 <- hetero(f9, data = main_df, panel.id = ~ gwcode + year, method = "BFGS")
+	fit_cv10 <- hetero(f10, data = main_df, panel.id = ~ gwcode + year, method = "BFGS")
+	fit_cv11 <- hetero(f11, data = main_df, panel.id = ~ gwcode + year, method = "BFGS")
 
-	comp <- compare_models(fit_cv1, fit_cv2, fit_cv3, fit_cv4, fit_cv5, fit_cv6, fit_cv7, fit_cv8, fit_cv9, original_data = main_df, test = T)
+	comp <- compare_models(fit_cv1, fit_cv2, fit_cv3, fit_cv4, fit_cv5, fit_cv6, fit_cv7, fit_cv8, fit_cv9, fit_cv10, fit_cv11, original_data = main_df, test = T)
 	comp
 
 	#modelsummary(comp$refitted_models)
