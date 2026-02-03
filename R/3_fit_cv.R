@@ -1,3 +1,5 @@
+nlag <- 1
+
 if(simulation_alternative == "no_conflict_effect"){
 	f_cv <- pdiff(cv, nlag) ~
 		plag(pgrowth(gdppc, 3), 1) +
@@ -17,8 +19,8 @@ if(simulation_alternative == "no_conflict_effect"){
 
 fit_cv <- hetero(f_cv, data = main_df, panel.id = ~ gwcode + year, method = "BFGS")
 
-cv_test <- FALSE
-if(cv_test){
+# Just do this once
+if(simulation_alternative == "base" & cv_approach == "regression"){
 	main_df[, cv_variance := sd(cv, na.rm = T), .(gwcode)]
 	main_df[, some_conflict := sum(best, na.rm = T) > 0, .(gwcode)]
 	main_df[, developing := max(gdppc, na.rm = T) < 5000, .(gwcode)]
@@ -26,8 +28,6 @@ if(cv_test){
 	hist(main_df$cv_variance)
 
 	cv_data <- main_df[cv_variance > 0.01 & some_conflict & developing]
-
-	nlag <- 1
 
 	f1 <- pdiff(cv, nlag) ~
 		plag(pmsum(yt01$transform(best), 3), 1) +
@@ -152,4 +152,44 @@ if(cv_test){
 
 	summary(fit_cv9)
 	summary(fit_cv9_limited)
+
+
+	cplot_fit_cv_mean <- coefplot(fit_cv, which = "mean") +
+		scale_x_discrete(labels = c(".pl1_I_best_1000" = "BRD>1000",
+																".pl1_g_gdppc_3" = "GDPPC_∆P3",
+																".pl1_d_tx90pgs_3" = "TX90_∆3")) +
+		ylab("Std. Coefficient Estimate") + ggtitle("E(∆CV)")
+
+	cplot_fit_cv_variance <- coefplot(fit_cv, which = "variance") +
+		scale_x_discrete(labels = c(".pl1_log_gdppc" = "lGDPPC",
+																".pl1_v2x_polyarchy" = "DEM",
+																".pl1_I_v2x_polyarchy_2" = "DEMsq")) +
+		ylab("Std. Coefficient Estimate") + ggtitle("V(∆CV)")
+
+	cplot_fit_des_mean <- coefplot(fit_des, which = "mean") +
+		scale_x_discrete(labels = c(
+			".pl1_ms_yt01_transform_best_3" = "BRD_MA3",
+			".pl1_g_gdppc_3" = "GDPPC_∆P3",
+			".pl1_d_tx90pgs_3" = "TX90_∆3",
+			".pl1_d_rx5daygs_3" = "RXDAY_∆3",
+			".pl1_d_v2x_polyarchy_3" = "DEM_∆3",
+			".pl1_d_I_v2x_polyarchy_2_3" = "DEMsq_∆3",
+			".pl1_g_population_3" = "POP_∆P3")) + ylab("Std. Coefficient Estimate") +
+		ggtitle("E(∆DES)")
+
+	cplot_fit_des_variance <- coefplot(fit_des, which = "variance") +
+		scale_x_discrete(labels = c(
+			".pl1_yt01_transform_best" = "BRD",
+			".pl1_tx90pgs" = "TX90",
+			".pl1_rx5daygs" = "RX5DAY",
+			".pl1_log_gdppc" = "lGDPPC",
+			".pl1_v2x_polyarchy" = "DEM",
+			".pl1_I_v2x_polyarchy_2" = "DEMsq",
+			".pl1_log_population" = "lPOP")) + ylab("Std. Coefficient Estimate") +
+		ggtitle("V(∆DES)")
+
+	(cplot_fit_des_mean + cplot_fit_des_variance) /
+	(cplot_fit_cv_mean + cplot_fit_cv_variance) + patchwork::plot_layout(nrow = 2, axes = "collect") + patchwork::plot_annotation(tag_levels = "A") &
+		theme_bw(base_size = 24)
+	ggsave(file.path("figures", simulation_alternative, "effect_plot.png"), device = ragg_png,  width = 12, height = 6, scale = 1.5)
 }

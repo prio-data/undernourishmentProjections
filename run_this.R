@@ -52,6 +52,9 @@ simulation_alternatives <- c("base", "constant_democracy", "constant_climate", "
 # CV projections
 cv_approaches <- c("regression", "manual")
 
+# cv_approach <- "regression"
+# simulation_alternative <- "base"
+
 for(cv_approach in cv_approaches){
 	for(simulation_alternative in simulation_alternatives){
 		rm(list = setdiff(ls(), c("plotting_colors", "ragg_png", "simulation_alternatives", "simulation_alternative", "cv_approaches", "cv_approach")))

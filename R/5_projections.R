@@ -112,7 +112,7 @@ if(cv_approach == "manual"){
 	result[, cv := fcv + cv_csum]
 } else{
 	cv_result <- simulate_newdata(
-		fit_cv9,
+		fit_cv,
 		newdata = all_projections,
 		by = c("scenario", "sim"),
 		nsim = 1, # 1 simulated draw per sim in all_projections
