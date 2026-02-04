@@ -3,14 +3,12 @@ yt01 <- scales::yj_trans(p = 0.1)
 f_base <- pdiff(des, 1) ~
 	plag(pmsum(yt01$transform(best), 3), 1) +
 	plag(pdiff(tx90pgs, 3), 1) +
-	plag(pdiff(rx5daygs, 3), 1) +
 	plag(pgrowth(gdppc, 3), 1) +
 	plag(pdiff(v2x_polyarchy, 3), 1) +
 	plag(pdiff(I(v2x_polyarchy^2), 3), 1) +
 	plag(pgrowth(population, 3), 1) |
 	plag(yt01$transform(best), 1) +
 	plag(tx90pgs, 1) +
-	plag(rx5daygs, 1) +
 	plag(log(gdppc), 1) +
 	plag(v2x_polyarchy, 1) +
 	plag(I(v2x_polyarchy^2), 1) +
@@ -19,13 +17,11 @@ f_base <- pdiff(des, 1) ~
 f_no_conflict_effect <-
 	pdiff(des, 1) ~
 	plag(pdiff(tx90pgs, 3), 1) +
-	plag(pdiff(rx5daygs, 3), 1) +
 	plag(pgrowth(gdppc, 3), 1) +
 	plag(pdiff(v2x_polyarchy, 3), 1) +
 	plag(pdiff(I(v2x_polyarchy^2), 3), 1) +
 	plag(pgrowth(population, 3), 1) |
 	plag(tx90pgs, 1) +
-	plag(rx5daygs, 1) +
 	plag(log(gdppc), 1) +
 	plag(v2x_polyarchy, 1) +
 	plag(I(v2x_polyarchy^2), 1) +
@@ -33,9 +29,9 @@ f_no_conflict_effect <-
 
 
 if(simulation_alternative == "no_conflict_effect"){
-	fit_des <- hetero(f_no_conflict_effect, data = main_df, panel.id = ~ gwcode + year, method = "BFGS")
+	fit_des <- hetero(f_no_conflict_effect, data = main_df, panel.id = ~ gwcode + year, method = "nlm")
 } else{
-	fit_des <- hetero(f_base, data = main_df, panel.id = ~ gwcode + year, method = "BFGS")
+	fit_des <- hetero(f_base, data = main_df, panel.id = ~ gwcode + year, method = "nlm")
 
 
 }

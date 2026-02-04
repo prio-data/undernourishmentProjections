@@ -16,33 +16,39 @@ if(simulation_alternative == "base" & cv_approach == "regression"){
 		domain = c(0, Inf)
 	)
 
-	agg_df <- all_projections[year >= 2024, .(best = mean(best), v2x_polyarchy = mean(v2x_polyarchy)), .(scenario, gwcode, year)]
-
+	all_projections$sim_modulo <- all_projections$sim %% 50
+	# aggregate every 10th simulation
+	agg_df <- all_projections[year >= 2024, .(best = mean(best), v2x_polyarchy = mean(v2x_polyarchy)), .(scenario, gwcode, year, sim_modulo)]
+	agg_df <- agg_df[,-"sim_modulo"]
 	scenarios <- names(plotting_colors)
 
 	brd_plot <- function(s){
 		to_plot <- rbindlist(list(main_df[year >= 1990, c("gwcode", "year", "best", "v2x_polyarchy")], agg_df[scenario == s, -"scenario"]))
 		to_plot$scenario <- ifelse(to_plot$year >= 2024, s, "historical")
+		agg_year <- to_plot[, .(best = mean(best, na.rm = T), v2x_polyarchy = mean(v2x_polyarchy, na.rm = T)), .(year)]
 		plotting_colors_hist <- c(plotting_colors, "historical" = "gray50")
+		to_plot$alpha_level <- if_else(to_plot$scenario == "historical", 0.7, 0.05)
 
-		ggplot(to_plot, aes(x = year, y = best, color = scenario)) +
-			geom_point(shape = 20, size = 0.3) +
-			geom_smooth(se = FALSE, color = "black", linewidth = 1, linetype = "dashed") +
+		ggplot() +
+			geom_point(data = to_plot, mapping = aes(x = year, y = best, color = scenario, alpha = alpha_level), shape = 20, size = 0.3) +
+			geom_line(data = agg_year, aes(x = year, y = best), color = "black", linewidth = 1, linetype = "solid") +
 			scale_y_continuous("BRD", transform = log10_1p_trans, breaks = c(0, 10, 100, 1000, 10000, 100000),
 												 labels = c("0", "10", expression(10^2), expression(10^3),expression(10^4), expression(10^5))) +
 			scale_color_manual(values = plotting_colors_hist) +
 			scale_x_continuous("Year", breaks = c(1990, 2024, 2050)) +
-			theme_bw(base_size = 24) + theme(legend.position = "none")
+			theme_bw(base_size = 24) + theme(legend.position = "none") + ggtitle(s)
 	}
 
 	dem_plot <- function(s){
 		to_plot <- rbindlist(list(main_df[year >= 1990, c("gwcode", "year", "best", "v2x_polyarchy")], agg_df[scenario == s, -"scenario"]))
 		to_plot$scenario <- ifelse(to_plot$year >= 2024, s, "historical")
+		agg_year <- to_plot[, .(best = mean(best, na.rm = T), v2x_polyarchy = mean(v2x_polyarchy, na.rm = T)), .(year)]
 		plotting_colors_hist <- c(plotting_colors, "historical" = "gray50")
+		to_plot$alpha_level <- if_else(to_plot$scenario == "historical", 0.7, 0.05)
 
-		ggplot(to_plot, aes(x = year, y = v2x_polyarchy, color = scenario)) +
-			geom_point(shape = 20, size = 0.3) +
-			geom_smooth(se = FALSE, color = "black", linewidth = 1, linetype = "dashed") +
+		ggplot() +
+			geom_point(data = to_plot, mapping = aes(x = year, y = v2x_polyarchy, color = scenario, alpha = alpha_level), shape = 20, size = 0.3) +
+			geom_line(data = agg_year, aes(x = year, y = v2x_polyarchy), color = "black", linewidth = 1, linetype = "solid") +
 			ylab("DEM") +
 			scale_color_manual(values = plotting_colors_hist) +
 			scale_x_continuous("Year", breaks = c(1990, 2024, 2050)) +
@@ -52,10 +58,10 @@ if(simulation_alternative == "base" & cv_approach == "regression"){
 	BRD_PLOTS <- lapply(scenarios, brd_plot)
 	DEM_PLOTS <- lapply(scenarios, dem_plot)
 
-	BRD_PLOTS[[1]] + BRD_PLOTS[[2]] + BRD_PLOTS[[3]] + BRD_PLOTS[[4]] + BRD_PLOTS[[5]] +
+	BRD_DEM <- BRD_PLOTS[[1]] + BRD_PLOTS[[2]] + BRD_PLOTS[[3]] + BRD_PLOTS[[4]] + BRD_PLOTS[[5]] +
 	DEM_PLOTS[[1]] + DEM_PLOTS[[2]] + DEM_PLOTS[[3]] + DEM_PLOTS[[4]] + DEM_PLOTS[[5]] + plot_layout(axes = "collect", ncol = 5)
 
-	ggsave(file.path("figures", simulation_alternative, "brd_dem_projections.png"), device = ragg_png,  width = 12, height = 4, scale = 1.5)
+	ggsave(file.path("figures", simulation_alternative, "brd_dem_projections.png"), plot = BRD_DEM, device = ragg_png,  width = 12, height = 4, scale = 1.5)
 
 }
 

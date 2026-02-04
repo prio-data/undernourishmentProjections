@@ -46,7 +46,6 @@ summarytable_des <- fitted_df_des |>
 		.pl1_g_population_3,
 		.pl1_log_population,
 		.pl1_tx90pgs,
-		.pl1_rx5daygs,
 		.pl1_d_tx90pgs_3
 	) |>
 	na.omit() |>
@@ -65,9 +64,7 @@ summarytable_des <- fitted_df_des |>
 			.pl1_g_population_3 ~ "POP_ΔP3",
 			.pl1_log_population ~ "lPOP",
 			.pl1_d_tx90pgs_3 ~ "TX90_Δ3",
-			.pl1_tx90pgs ~ "TX90",
-			.pl1_rx5daygs ~ "RX5DAY_Δ3",
-			.pl1_rx5daygs ~ "RX5DAY"
+			.pl1_tx90pgs ~ "TX90"
 		),
 		statistic = list(-all_of(c("year", "gwcode")) ~ "{median} ({min}, {max})",
 										 all_of("year") ~ "{min} to {max}",
@@ -124,8 +121,113 @@ summarytable_cv <- fitted_df_cv |>
 	) |>
 	gtsummary::modify_caption("Summary statistics of training data for ΔCV model")
 
-summarytable |> gtsummary::as_gt()  |> gt::gtsave(file.path("tables", simulation_alternative, "summary_table.tex"))
-summarytable_des |> gtsummary::as_gt() |> gt::gtsave(file.path("tables", simulation_alternative, "summary_table_des.tex"))
-summarytable_cv |> gtsummary::as_gt() |> gt::gtsave(file.path("tables", simulation_alternative, "summary_table_cv.tex"))
+summarytable |> gtsummary::as_gt()  |> gt::gtsave(file.path("tables", simulation_alternative, "summary_table.tex"), label = "tab:summary_table")
+summarytable_des |> gtsummary::as_gt() |> gt::gtsave(file.path("tables", simulation_alternative, "summary_table_des.tex"), label = "tab:summary_table_des")
+summarytable_cv |> gtsummary::as_gt() |> gt::gtsave(file.path("tables", simulation_alternative, "summary_table_cv.tex"), label = "tab:summary_table_cv")
+
+ggplot(main_df, aes(x = cv, y = des)) + geom_point() + geom_smooth(method = "lm", se = TRUE) +
+	theme_bw(base_size = 24) + ylab("DES") + xlab("CV")
+ggsave(file.path("figures", simulation_alternative, "cv_against_des.png"), device = ragg_png, scale = 1.5, width = 8, height = 6)
+
+
+
+nlag <- 1
+# Plot continuous conflict instead of the binary data
+f_cv_to_plot <- pdiff(cv, nlag) ~
+	plag(best, nlag) +
+	plag(pgrowth(gdppc, 3), nlag) +
+	plag(pdiff(tx90pgs, 3), nlag) |
+	plag(log(gdppc), nlag) +
+	plag(v2x_polyarchy, nlag) +
+	plag(I(v2x_polyarchy^2), nlag)
+
+fit_cv_to_plot <- hetero(f_cv_to_plot, data = main_df, panel.id = ~ gwcode + year, method = "BFGS")
+fitted_df_cv_to_plot <- heterolm::transform_newdata(fit_cv_to_plot, main_df)
+
+A <- ggplot(fitted_df_cv_to_plot, aes(x= .pl1_best, y = .pdi1_cv)) +
+	geom_point() +
+	geom_smooth(method = "gam", se = TRUE) +
+	scale_x_continuous("BRD", transform = "log1p", breaks = c(0, 1, 10, 100, 1000, 10000, 100000), limits = c(0, 100000), labels = scales::comma) +
+	ylab("Food Inequality, ΔCV") +
+	theme_bw(base_size = 20)
+
+B <- ggplot(fitted_df_cv_to_plot, aes(x= .pl1_g_gdppc_3, y = .pdi1_cv)) +
+	geom_point() +
+	geom_smooth(method = "gam", se = TRUE) +
+	scale_x_continuous("GDPPC_ΔP3", labels = scales::comma) +
+	ylab("Food Inequality, ΔCV") +
+	theme_bw(base_size = 20)
+
+C <- ggplot(fitted_df_cv_to_plot, aes(x= .pl1_v2x_polyarchy, y = .pdi1_cv)) +
+	geom_point() +
+	geom_smooth(method = "loess", se = TRUE) +
+	scale_x_continuous("DEM", labels = scales::comma) +
+	ylab("Food Inequality, ΔCV") +
+	theme_bw(base_size = 20)
+
+D <- ggplot(fitted_df_cv_to_plot, aes(x= .pl1_d_tx90pgs_3, y = .pdi1_cv)) +
+	geom_point() +
+	geom_smooth(method = "loess", se = TRUE) +
+	scale_x_continuous("TX90_Δ3", labels = scales::comma) +
+	ylab("Food Inequality, ΔCV") +
+	theme_bw(base_size = 20)
+
+A + B + C + D + plot_layout(axes = "collect")
+
+ragg_png <- function(...) ragg::agg_png(..., res = 300, units = "in")
+ggsave(file.path("figures", simulation_alternative, "cv_against_covariates.png"), device = ragg_png, width = 12, height = 12)
+
+
+#f_base but without transforming conflict (for plotting)
+f_base_to_plot <- pdiff(des, 1) ~
+	plag(best, 1) +
+	plag(pdiff(tx90pgs, 3), 1) +
+	plag(pdiff(rx5daygs, 3), 1) +
+	plag(pgrowth(gdppc, 3), 1) +
+	plag(pdiff(v2x_polyarchy, 3), 1) +
+	plag(pdiff(I(v2x_polyarchy^2), 3), 1) +
+	plag(pgrowth(population, 3), 1) |
+	plag(yt01$transform(best), 1) +
+	plag(tx90pgs, 1) +
+	plag(rx5daygs, 1) +
+	plag(log(gdppc), 1) +
+	plag(v2x_polyarchy, 1) +
+	plag(I(v2x_polyarchy^2), 1) +
+	plag(log(population), 1)
+
+fit_des_to_plot <- hetero(f_base_to_plot, data = main_df, panel.id = ~ gwcode + year, method = "BFGS")
+fitted_df_ds_to_plot <- heterolm::transform_newdata(fit_des_to_plot, main_df)
+
+A <- ggplot(fitted_df_ds_to_plot, aes(x= .pl1_best, y = .pdi1_des)) +
+	geom_point() +
+	geom_smooth(method = "gam", se = TRUE) +
+	scale_x_continuous("BRD", transform = "log1p", breaks = c(0, 1, 10, 100, 1000, 10000, 100000), limits = c(0, 100000), labels = scales::comma) +
+	ylab("ΔDES") +
+	theme_bw(base_size = 20)
+
+B <- ggplot(fitted_df_ds_to_plot, aes(x= .pl1_g_gdppc_3, y = .pdi1_des)) +
+	geom_point() +
+	geom_smooth(method = "gam", se = TRUE) +
+	scale_x_continuous("GDPPC_ΔP3", labels = scales::comma) +
+	ylab("ΔDES") +
+	theme_bw(base_size = 20)
+
+C <- ggplot(fitted_df_ds_to_plot, aes(x= .pl1_d_v2x_polyarchy_3, y = .pdi1_des)) +
+	geom_point() +
+	geom_smooth(method = "gam", se = TRUE) +
+	scale_x_continuous("DEM", labels = scales::comma) +
+	ylab("ΔDES") +
+	theme_bw(base_size = 20)
+
+D <- ggplot(fitted_df_ds_to_plot, aes(x= .pl1_d_tx90pgs_3, y = .pdi1_des)) +
+	geom_point() +
+	geom_smooth(method = "gam", se = TRUE) +
+	scale_x_continuous("TX90_Δ3", labels = scales::comma) +
+	ylab("ΔDES") +
+	theme_bw(base_size = 20)
+
+A + B + C + D + plot_layout(axes = "collect")
+ragg_png <- function(...) ragg::agg_png(..., res = 300, units = "in")
+ggsave(file.path("figures", simulation_alternative, "des_against_covariates.png"), device = ragg_png, width = 12, height = 12)
 
 

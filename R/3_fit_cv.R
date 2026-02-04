@@ -17,7 +17,7 @@ if(simulation_alternative == "no_conflict_effect"){
 		plag(I(v2x_polyarchy^2), 1)
 }
 
-fit_cv <- hetero(f_cv, data = main_df, panel.id = ~ gwcode + year, method = "BFGS")
+fit_cv <- hetero(f_cv, data = main_df, panel.id = ~ gwcode + year, method = "nlm")
 
 # Just do this once
 if(simulation_alternative == "base" & cv_approach == "regression"){
@@ -134,32 +134,32 @@ if(simulation_alternative == "base" & cv_approach == "regression"){
 		plag(rx5daygs, 1)
 
 
-	fit_cv1 <- hetero(f1, data = main_df, panel.id = ~ gwcode + year, method = "BFGS")
-	fit_cv2 <- hetero(f2, data = main_df, panel.id = ~ gwcode + year, method = "BFGS")
-	fit_cv3 <- hetero(f3, data = main_df, panel.id = ~ gwcode + year, method = "BFGS")
-	fit_cv4 <- hetero(f4, data = main_df, panel.id = ~ gwcode + year, method = "BFGS")
-	fit_cv5 <- hetero(f5, data = main_df, panel.id = ~ gwcode + year, method = "BFGS")
-	fit_cv6 <- hetero(f6, data = main_df, panel.id = ~ gwcode + year, method = "BFGS")
-	fit_cv7 <- hetero(f7, data = main_df, panel.id = ~ gwcode + year, method = "BFGS")
-	fit_cv8 <- hetero(f8, data = main_df, panel.id = ~ gwcode + year, method = "BFGS")
-	fit_cv9 <- hetero(f9, data = main_df, panel.id = ~ gwcode + year, method = "BFGS")
-	fit_cv10 <- hetero(f10, data = main_df, panel.id = ~ gwcode + year, method = "BFGS")
-	fit_cv11 <- hetero(f11, data = main_df, panel.id = ~ gwcode + year, method = "BFGS")
+	fit_cv1 <- hetero(f1, data = main_df, panel.id = ~ gwcode + year, method = "nlm")
+	fit_cv2 <- hetero(f2, data = main_df, panel.id = ~ gwcode + year, method = "nlm")
+	fit_cv3 <- hetero(f3, data = main_df, panel.id = ~ gwcode + year, method = "nlm")
+	fit_cv4 <- hetero(f4, data = main_df, panel.id = ~ gwcode + year, method = "nlm")
+	fit_cv5 <- hetero(f5, data = main_df, panel.id = ~ gwcode + year, method = "nlm")
+	fit_cv6 <- hetero(f6, data = main_df, panel.id = ~ gwcode + year, method = "nlm")
+	fit_cv7 <- hetero(f7, data = main_df, panel.id = ~ gwcode + year, method = "nlm")
+	fit_cv8 <- hetero(f8, data = main_df, panel.id = ~ gwcode + year, method = "nlm")
+	fit_cv9 <- hetero(f9, data = main_df, panel.id = ~ gwcode + year, method = "nlm")
+	fit_cv10 <- hetero(f10, data = main_df, panel.id = ~ gwcode + year, method = "nlm")
+	fit_cv11 <- hetero(f11, data = main_df, panel.id = ~ gwcode + year, method = "nlm")
 
 	comp <- compare_models(fit_cv1, fit_cv2, fit_cv3, fit_cv4, fit_cv5, fit_cv6, fit_cv7, fit_cv8, fit_cv9, fit_cv10, fit_cv11, original_data = main_df, test = T)
 	comp
 
 	#modelsummary(comp$refitted_models)
 
-	fit_cv1_limited <- hetero(f1, data = cv_data, panel.id = ~ gwcode + year, method = "BFGS")
-	fit_cv2_limited <- hetero(f2, data = cv_data, panel.id = ~ gwcode + year, method = "BFGS")
-	fit_cv3_limited <- hetero(f3, data = cv_data, panel.id = ~ gwcode + year, method = "BFGS")
-	fit_cv4_limited <- hetero(f4, data = cv_data, panel.id = ~ gwcode + year, method = "BFGS")
-	fit_cv5_limited <- hetero(f5, data = cv_data, panel.id = ~ gwcode + year, method = "BFGS")
-	fit_cv6_limited <- hetero(f6, data = cv_data, panel.id = ~ gwcode + year, method = "BFGS")
-	fit_cv7_limited <- hetero(f7, data = cv_data, panel.id = ~ gwcode + year, method = "BFGS")
-	fit_cv8_limited <- hetero(f8, data = main_df, panel.id = ~ gwcode + year, method = "BFGS")
-	fit_cv9_limited <- hetero(f9, data = main_df, panel.id = ~ gwcode + year, method = "BFGS")
+	fit_cv1_limited <- hetero(f1, data = cv_data, panel.id = ~ gwcode + year, method = "nlm")
+	fit_cv2_limited <- hetero(f2, data = cv_data, panel.id = ~ gwcode + year, method = "nlm")
+	fit_cv3_limited <- hetero(f3, data = cv_data, panel.id = ~ gwcode + year, method = "nlm")
+	fit_cv4_limited <- hetero(f4, data = cv_data, panel.id = ~ gwcode + year, method = "nlm")
+	fit_cv5_limited <- hetero(f5, data = cv_data, panel.id = ~ gwcode + year, method = "nlm")
+	fit_cv6_limited <- hetero(f6, data = cv_data, panel.id = ~ gwcode + year, method = "nlm")
+	fit_cv7_limited <- hetero(f7, data = cv_data, panel.id = ~ gwcode + year, method = "nlm")
+	fit_cv8_limited <- hetero(f8, data = main_df, panel.id = ~ gwcode + year, method = "nlm")
+	fit_cv9_limited <- hetero(f9, data = main_df, panel.id = ~ gwcode + year, method = "nlm")
 
 	comp <- compare_models(fit_cv1_limited,
 												 fit_cv2_limited,

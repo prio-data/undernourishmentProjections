@@ -10,6 +10,7 @@ library(lubridate)
 library(tidyr)
 library(arrow)
 library(modelsummary)
+library(xtable)
 
 plotting_colors <- c("SSP1-2.6" = "#1E9620",
 										 "SSP2-4.5" = "#4576BF",
