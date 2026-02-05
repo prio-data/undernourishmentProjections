@@ -8,7 +8,7 @@ all_projections[scenario == "SSP4"]$scenario <- "SSP4-7.0"
 all_projections[scenario == "SSP5"]$scenario <- "SSP5-8.5"
 
 # Just do once
-if(simulation_alternative == "base" & cv_approach == "regression"){
+if(simulation_alternative == "base" & cv_approach == "regression" & NLAG == 1){
 	log10_1p_trans <- scales::new_transform(
 		name = "log10_1p",
 		transform = function(x) log10(1 + x),
@@ -232,6 +232,23 @@ global_agg <- result[, .(
 global_agg[, total_des := des * population]
 
 saveRDS(global_agg, file.path("results", simulation_alternative, cv_approach, "global_agg.rds"))
+
+country_agg <- result[, .(
+	nou = sum(nou, na.rm = TRUE),
+	pou = mean(pou, na.rm = TRUE),
+	des = mean(des_sim, na.rm = TRUE),
+	mder = mean(mder, na.rm = TRUE),
+	cv = mean(cv, na.rm = TRUE),
+	best = sum(best, na.rm = TRUE),
+	gdppc = mean(gdppc, na.rm = TRUE),
+	v2x_polyarchy = mean(v2x_polyarchy, na.rm = TRUE),
+	tx90pgs = mean(tx90pgs, na.rm = TRUE),
+	rx5daygs = mean(rx5daygs, na.rm = TRUE),
+	population = sum(population, na.rm = TRUE)
+), by = .(scenario, gwcode, year)]
+country_agg[, total_des := des * population]
+
+saveRDS(country_agg, file.path("results", simulation_alternative, cv_approach, "country_agg.rds"))
 
 global_hist <- main_df[gwcode %in% unique(result$gwcode)]
 global_hist[, nou := poldat::estimate_undernourishment(des, cv, mder, population)$number_undernourished]

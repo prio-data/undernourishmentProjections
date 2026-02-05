@@ -64,7 +64,7 @@ des_fit_mv5 <- hetero(
 	method = "nlm"
 )
 
-comp <- compare_models(des_fit_var, des_fit_mv3, fit_mv5, original_data = main_df, test = T)
+comp <- compare_models(des_fit_var, des_fit_mv3, des_fit_mv5, original_data = main_df, test = T)
 comp
 print(xtable(comp$comparison,
 			 label = "tab:des_moving_window_gof",
@@ -470,8 +470,7 @@ fit_mv3_nlag <- hetero(
 	method = "nlm"
 )
 
-summary(fit_mv3)
-summary(fit_mv3_nlag)
+hetero_table(base, fit_mv3_nlag)
 # Same patterns, but stronger results when considering 2-5 years than 1 year.
 # Certain effects drop off over very long time-spans. E.g., conflict.
 
@@ -495,6 +494,6 @@ fit_mv3_2000 <- hetero(
 	panel.id = ~ gwcode + year,
 	method = "nlm"
 )
-summary(fit_mv3)
-summary(fit_mv3_2000)
+
+hetero_table(base, fit_mv3_2000)
 # Quite similar results

@@ -43,7 +43,7 @@ for(simulation_alternative in simulation_alternatives){
 }
 
 summarize_quantiles <- function(dt, var, by_cols = c("approach", "scenario", "year")) {
-	dt[, .(
+	dt[, list(
 		variable = var,
 		q025 = quantile(get(var), 0.025, na.rm = TRUE),
 		q25  = quantile(get(var), 0.25, na.rm = TRUE),
@@ -73,7 +73,7 @@ plots_data[year == 2050 & variable == "nou", -c("s_a", "variable")] |>
 	gt::tab_header("Undernourished quantiles in 2050 from population-weighted results") |>
 	gt::gtsave(paste0("tables/nou_quantiles_2050.tex"))
 
-base_plot <- function(varname, prettyname) {
+base_plot <- function(varname, prettyname, plots_data) {
 	ggplot() +
 	geom_line(data = global_hist, aes(x = year, y = .data[[varname]]), color = "black") +
 	geom_lineribbon(data = plots_data[variable == varname], aes(x = year, ymin = q025, ymax = q975, color = scenario, fill = scenario, group = s_a), alpha = 0.2) +
@@ -85,7 +85,7 @@ base_plot <- function(varname, prettyname) {
 	theme_bw()
 }
 
-plot_without_historic <- function(varname, prettyname) {
+plot_without_historic <- function(varname, prettyname, plots_data) {
 	ggplot() +
 		geom_lineribbon(data = plots_data[variable == varname], aes(x = year, ymin = q025, ymax = q975, color = scenario, fill = scenario, group = s_a), alpha = 0.2) +
 		geom_line(data = plots_data[variable == varname], aes(x = year, y = q50, color = scenario, linetype = approach, group = s_a)) +
@@ -96,13 +96,13 @@ plot_without_historic <- function(varname, prettyname) {
 		theme_bw()
 }
 
-POU <- base_plot("pou", "PoU")
-NOU <- base_plot("nou", "Under-\nnourished")
-DES <- base_plot("des", "DES")
-CV <- base_plot("cv", "CV")
-GDPPC <- base_plot("gdppc", "GDPPC")
-TX90 <- base_plot("tx90pgs", "TX90")
-RX5DAY <- base_plot("rx5daygs", "RX5DAY")
+POU <- base_plot("pou", "PoU", plots_data)
+NOU <- base_plot("nou", "Under-\nnourished", plots_data)
+DES <- base_plot("des", "DES", plots_data)
+CV <- base_plot("cv", "CV", plots_data)
+GDPPC <- base_plot("gdppc", "GDPPC", plots_data)
+TX90 <- base_plot("tx90pgs", "TX90", plots_data)
+RX5DAY <- base_plot("rx5daygs", "RX5DAY", plots_data)
 
 GDPPC / CV / DES / POU / NOU / TX90 / RX5DAY + plot_layout(ncol = 1, guides = "collect", axes = "collect") &
 	theme_bw(base_size = 24) &
@@ -149,7 +149,7 @@ summarize_diff <- function(dt, var, by_cols = c("scenario", "year"), baseline = 
 	merged <- merge(
 		other_agg,
 		base_agg[, .(scenario, year, q025_base = q025, q50_base = q50, q975_base = q975)],
-		by = c("scenario", "year")
+		by = by_cols
 	)
 
 	merged[, `:=`(
@@ -244,3 +244,75 @@ DES + POU + NOU + plot_layout(design = layout, guides = "collect", axes = "colle
 	scale_color_manual("Scenario", values = plotting_colors)
 ragg_png <- function(...) ragg::agg_png(..., res = 300, units = "in")
 ggsave("figures/approach_comparison_constant_climate_diff.png", device = ragg_png,  width = 12, height = 4, scale = 1.5)
+
+
+global_agg_fnames_cv <- file.path("results", "base", cv_approaches, "global_agg.rds")
+global_agg_cv <- lapply(global_agg_fnames_cv, readRDS)
+names(global_agg_cv) <- cv_approaches
+global_agg_cv <- dplyr::bind_rows(global_agg_cv, .id = "approach")
+
+plots_data_cv <- rbindlist(lapply(c("gdppc", "pou", "des", "nou", "cv", "cv_non_weight", "tx90pgs", "rx5daygs"), function(v) {
+	summarize_quantiles(global_agg_cv, v)
+}))
+
+POU <- base_plot("pou", "PoU", plots_data_cv)
+NOU <- base_plot("nou", "Under-\nnourished", plots_data_cv)
+DES <- base_plot("des", "DES", plots_data_cv)
+CV <- base_plot("cv", "CV", plots_data_cv)
+GDPPC <- base_plot("gdppc", "GDPPC", plots_data_cv)
+TX90 <- base_plot("tx90pgs", "TX90", plots_data_cv)
+
+CV / POU / NOU + plot_layout(ncol = 1, guides = "collect", axes = "collect") &
+	theme_bw(base_size = 24) &
+	theme(legend.position = "bottom",
+				legend.box = "vertical") &
+	scale_color_manual("Scenario", values = plotting_colors) &
+	scale_fill_manual("Scenario", values = plotting_colors) &
+	scale_linetype_discrete("Approach") &
+	scale_x_continuous(breaks = c(2024, 2050))
+ggsave("figures/approach_comparison_manual_cv.png", device = ragg_png,  width = 12, height = 12, scale = 1.5)
+
+
+
+country_agg_fnames <- file.path("results", c("base", "no_conflict_effect"), "regression", "country_agg.rds")
+country_agg <- lapply(country_agg_fnames, readRDS)
+names(country_agg) <- c("base", "no_conflict_effect")
+country_agg <- dplyr::bind_rows(country_agg, .id = "approach")
+
+wide_dt <- dcast(country_agg[year == 2050],
+							scenario + gwcode ~ approach,
+							value.var = "pou")
+wide_dt[, diff := base - no_conflict_effect]
+map <- cshapes::cshp(date = as.Date("2019-01-01"))
+
+ssp1_map <- left_join(map, wide_dt[scenario == "SSP1-2.6"], by = "gwcode") |> dplyr::mutate(scenario = "SSP1-2.6")
+ssp2_map <- left_join(map, wide_dt[scenario == "SSP2-4.5"], by = "gwcode") |> dplyr::mutate(scenario = "SSP2-4.5")
+ssp3_map <- left_join(map, wide_dt[scenario == "SSP3-7.0"], by = "gwcode") |> dplyr::mutate(scenario = "SSP3-7.0")
+ssp4_map <- left_join(map, wide_dt[scenario == "SSP4-7.0"], by = "gwcode") |> dplyr::mutate(scenario = "SSP4-7.0")
+ssp5_map <- left_join(map, wide_dt[scenario == "SSP5-8.5"], by = "gwcode") |> dplyr::mutate(scenario = "SSP5-8.5")
+maps <- bind_rows(ssp1_map, ssp2_map, ssp3_map, ssp4_map, ssp5_map)
+maps$diff |> summary()
+A <- ggplot(ssp1_map) +
+	geom_sf(aes(fill = diff)) +
+	scale_fill_viridis_c("ΔPoU", option = "turbo", limits = c(-0.013, 0.12)) +
+	theme_bw(base_size = 24) + labs(subtitle = "SSP1-2.6")
+B <- ggplot(ssp2_map) +
+	geom_sf(aes(fill = diff)) +
+	scale_fill_viridis_c("ΔPoU", option = "turbo", limits = c(-0.013, 0.12)) +
+	theme_bw(base_size = 24) + labs(subtitle = "SSP2.4-5")
+C <- ggplot(ssp3_map) +
+	geom_sf(aes(fill = diff)) +
+	scale_fill_viridis_c("ΔPoU", option = "turbo", limits = c(-0.013, 0.12)) +
+	theme_bw(base_size = 24) + labs(subtitle = "SSP3-7.0")
+D <- ggplot(ssp4_map) +
+	geom_sf(aes(fill = diff)) +
+	scale_fill_viridis_c("ΔPoU", option = "turbo", limits = c(-0.013, 0.12)) +
+	theme_bw(base_size = 24) + labs(subtitle = "SSP4-7.0")
+E <- ggplot(ssp5_map) +
+	geom_sf(aes(fill = diff)) +
+	scale_fill_viridis_c("ΔPoU", option = "turbo", limits = c(-0.013, 0.12)) +
+	theme_bw(base_size = 24) + labs(subtitle = "SSP5-8.5")
+
+MAP_DIFF_POU <- A + B + C + D + E + plot_layout(guides = "collect") + plot_annotation(caption = "Base - No conf approach, 2050") &
+	theme_bw(base_size = 24)
+ggsave("figures/pou_base_vs_noconf_map.png", MAP_DIFF_POU, device = ragg_png,  width = 12, height = 5, scale = 1.5)

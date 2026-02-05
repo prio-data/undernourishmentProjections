@@ -53,12 +53,18 @@ simulation_alternatives <- c("base", "constant_democracy", "constant_climate", "
 # CV projections
 cv_approaches <- c("regression", "manual")
 
+NLAG <- 1
+
 # cv_approach <- "regression"
 # simulation_alternative <- "base"
 
 for(cv_approach in cv_approaches){
 	for(simulation_alternative in simulation_alternatives){
 		rm(list = setdiff(ls(), c("plotting_colors", "ragg_png", "simulation_alternatives", "simulation_alternative", "cv_approaches", "cv_approach")))
+		dir.create(file.path("results", paste0("nlag", NLAG), simulation_alternative, cv_approach), recursive = T)
+		dir.create(file.path("tables", paste0("nlag", NLAG), simulation_alternative, cv_approach), recursive = T)
+		dir.create(file.path("figures", paste0("nlag", NLAG), simulation_alternative, cv_approach), recursive = T)
+
 		dir.create(file.path("results", simulation_alternative, cv_approach), recursive = T)
 		dir.create(file.path("tables", simulation_alternative, cv_approach), recursive = T)
 		dir.create(file.path("figures", simulation_alternative, cv_approach), recursive = T)
@@ -67,7 +73,7 @@ for(cv_approach in cv_approaches){
 		source("R/2_fit_des.R")
 		source("R/3_fit_cv.R")
 
-		if(simulation_alternative == "base" & cv_approach == "regression"){
+		if(simulation_alternative == "base" & cv_approach == "regression" & NLAG == 1){
 			source("R/2_1_des_model_comparison.R")
 			source("R/4_summary_tables.R")
 		}
