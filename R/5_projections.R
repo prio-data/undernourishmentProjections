@@ -7,8 +7,10 @@ all_projections[scenario == "SSP3"]$scenario <- "SSP3-7.0"
 all_projections[scenario == "SSP4"]$scenario <- "SSP4-7.0"
 all_projections[scenario == "SSP5"]$scenario <- "SSP5-8.5"
 
+
+
 # Just do once
-if(simulation_alternative == "base" & cv_approach == "regression" & NLAG == 1){
+if(simulation_alternative == "base" & cv_approach == "regression" & TIME_INTERVAL == 1){
 	log10_1p_trans <- scales::new_transform(
 		name = "log10_1p",
 		transform = function(x) log10(1 + x),
@@ -119,64 +121,57 @@ if(simulation_alternative == "constant_climate"){
 	all_projections[, c("tx90pgs_base", "rx5daygs_base", "spei6gs_base", "tas_base") := NULL]
 }
 
-#### ----------- DES projections ---------- ####
-result <- simulate_newdata(
-	fit_des,
-	newdata = all_projections,
-	by = c("scenario", "sim"),
-	nsim = 1, # 1 simulated draw per sim in all_projections
-	type = "data",
-	include_pred = TRUE,
-	seed = 42
-)
-
-result[gwcode == 530 & sim == 1] |>
-	ggplot(aes(x = year, y = gdppc, color = scenario)) + geom_line()
-result[gwcode == 530 & sim == 1] |>
-	ggplot(aes(x = year, y = mu, color = scenario)) + geom_line()
-result[gwcode == 530 & sim == 1] |>
-	ggplot(aes(x = year, y = .pdi1_des_sim, color = scenario)) + geom_line()
-
-result <- result[year>=2024]
-result[, des_sim := des + cumsum(.pdi1_des_sim), by = c("scenario", "gwcode", "sim")] # Simulations!
-
-result[gwcode == 530 & sim == 1] |>
-	ggplot(aes(x = year, y = des_sim, color = scenario)) + geom_line()
-
-
 #### --------- CV projections ---------------- ####
-
-
-
-
 if(cv_approach == "manual"){
+	pre_2024 <- all_projections[year < 2024]
+	all_projections <- all_projections[year >= 2024]
+
+
 	if(simulation_alternative == "no_conflict_effect"){
-		result[, cv_adj := -0.003]
+		all_projections[, cv_adj := -0.003]
 	} else{
-		result[, cv_adj := 0][best >= 1000, cv_adj := 0.01]
-		result[, nowar := 0][best < 1000, nowar := 1]
-		result[, wargrp := cumsum(nowar==0)]
-		result[, nowaryears := cumsum(nowar), by = c("scenario", "gwcode", "sim", "wargrp")]
-		result[nowaryears > 0, cv_adj := -0.003]
+		all_projections[, cv_adj := 0][best >= 1000, cv_adj := 0.01]
+		all_projections[, nowar := 0][best < 1000, nowar := 1]
+		all_projections[, wargrp := cumsum(nowar==0)]
+		all_projections[, nowaryears := cumsum(nowar), by = c("scenario", "gwcode", "sim", "wargrp")]
+		all_projections[nowaryears > 0, cv_adj := -0.003]
 	}
 
 	mincv <- as.data.table(main_df)[, min(cv, na.rm = T), by = "gwcode"][, .(gwcode, mincv = V1)]
-	initial_cv <- result[, .SD[1], by = c("scenario", "gwcode", "sim")][, .(scenario, gwcode, sim, fcv = cv)]
-	result <- merge(result, initial_cv, by = c("scenario", "gwcode", "sim"))
-	result <- merge(result, mincv, by = "gwcode")
-	result[scenario == "SSP1", mincv := 0.2]
-	result[, diff_change := cv_adj != shift(cv_adj, fill = FALSE), by = c("scenario", "gwcode", "sim")]
-	result[, cvgrp := cumsum(diff_change)]
-	result[, cv_csum := cumsum(cv_adj), by = c("scenario", "gwcode", "sim", "cvgrp")]
-	result[(fcv + cv_csum - mincv) < 0, cv_adj := 0]
-	result[, cv_csum := cumsum(cv_adj), by = c("scenario", "gwcode", "sim")]
-	result[(fcv + cv_csum - mincv) < 0, cv_adj := 0]
-	result[, cv_csum := cumsum(cv_adj), by = c("scenario", "gwcode", "sim")]
-	result[(fcv + cv_csum) > 0.4, cv_adj := 0]
-	result[, cv_csum := cumsum(cv_adj), by = c("scenario", "gwcode", "sim")]
-	result[, cv := fcv + cv_csum]
+	initial_cv <- pre_2024[year == 2023][, .(scenario, gwcode, sim, fcv = cv)]
+	all_projections <- merge(all_projections, initial_cv, by = c("scenario", "gwcode", "sim"))
+	all_projections <- merge(all_projections, mincv, by = "gwcode")
+	all_projections[scenario == "SSP1", mincv := 0.2]
+	all_projections[, diff_change := cv_adj != shift(cv_adj, fill = FALSE), by = c("scenario", "gwcode", "sim")]
+	all_projections[, cvgrp := cumsum(diff_change)]
+	all_projections[, cv_csum := cumsum(cv_adj), by = c("scenario", "gwcode", "sim", "cvgrp")]
+	all_projections[(fcv + cv_csum - mincv) < 0, cv_adj := 0]
+	all_projections[, cv_csum := cumsum(cv_adj), by = c("scenario", "gwcode", "sim")]
+	all_projections[(fcv + cv_csum - mincv) < 0, cv_adj := 0]
+	all_projections[, cv_csum := cumsum(cv_adj), by = c("scenario", "gwcode", "sim")]
+	all_projections[(fcv + cv_csum) > 0.4, cv_adj := 0]
+	all_projections[, cv_csum := cumsum(cv_adj), by = c("scenario", "gwcode", "sim")]
+	all_projections[, cv := fcv + cv_csum]
+
+	all_projections <- rbindlist(list(pre_2024, all_projections), use.names = TRUE, fill = TRUE)
+	setorder(all_projections, scenario, gwcode, sim, year)
+}
+
+# Aggregate projections if TIME_INTERVAL > 1
+if(TIME_INTERVAL > 1){
+	mean_vars <- setdiff(names(all_projections), c("scenario", "gwcode", "year", "sim", "best"))
+	all_projections[, period := (year - 2024) %/% TIME_INTERVAL, by = .(scenario, gwcode, sim)]
+	all_projections <- all_projections[, c(
+		list(year = max(year), best = sum(best, na.rm = TRUE)),
+		lapply(.SD, mean, na.rm = TRUE)
+	), by = .(scenario, gwcode, period, sim), .SDcols = mean_vars]
 } else{
-	cv_result <- simulate_newdata(
+	all_projections$period <- all_projections$year
+}
+
+
+if(cv_approach == "regression"){
+	result <- simulate_newdata(
 		fit_cv,
 		newdata = all_projections,
 		by = c("scenario", "sim"),
@@ -186,25 +181,46 @@ if(cv_approach == "manual"){
 		seed = 42
 	)
 
-	cv_result <- cv_result[year>=2024]
-	#cv_result[, chain := year %% 1]
-	#cv_result[, cv_sim := cv[1] + cumsum(.pdi1_cv_sim), by = .(scenario, sim, gwcode, chain)]
-	cv_result[, cv_sim := cv[1] + cumsum(.pdi1_cv_sim), by = .(scenario, sim, gwcode)]
-
-	result <- merge(result, cv_result[, c("scenario", "gwcode", "year", "sim", "cv_sim")], by = c("scenario", "gwcode", "year", "sim"))
+	result <- result[year>=2024]
+	result[, cv_sim := cv[1] + cumsum(.pdi1_cv_sim), by = .(scenario, sim, gwcode)]
 	result$cv <- result$cv_sim
 }
 
 result[, .(scenario, gwcode, sim, year, cv, best)] |>
 	ggplot(aes(x = year, y = cv, color = scenario)) + geom_smooth() + facet_wrap(~scenario)
 
-result[gwcode == 530, .(scenario, sim, year, cv, best)] |>
-	ggplot(aes(x = year, y = cv, color = scenario)) + geom_smooth() + facet_wrap(~scenario, ncol = 1)
+result[gwcode == 530 & sim == 1, .(scenario, sim, year, cv, best)] |>
+	ggplot(aes(x = year, y = cv, color = scenario)) + geom_line() + facet_wrap(~scenario, ncol = 1)
 
 
+#### ----------- DES projections ---------- ####
+des_result <- simulate_newdata(
+	fit_des,
+	newdata = all_projections,
+	by = c("scenario", "sim"),
+	nsim = 1, # 1 simulated draw per sim in all_projections
+	type = "data",
+	include_pred = TRUE,
+	seed = 42
+)
+
+des_result <- des_result[year>=2024]
+des_result[, des_sim := des + cumsum(.pdi1_des_sim), by = c("scenario", "gwcode", "sim")] # Simulations!
+result <- merge(result, des_result[, c("scenario", "gwcode", "year", "sim", "des_sim")], by = c("scenario", "gwcode", "year", "sim"))
+
+des_result[gwcode == 530 & sim == 1] |>
+	ggplot(aes(x = year, y = gdppc, color = scenario)) + geom_line()
+des_result[gwcode == 530 & sim == 1] |>
+	ggplot(aes(x = year, y = mu, color = scenario)) + geom_line()
+des_result[gwcode == 530 & sim == 1] |>
+	ggplot(aes(x = year, y = .pdi1_des_sim, color = scenario)) + geom_line()
+
+result[gwcode == 530 & sim == 1] |>
+	ggplot(aes(x = year, y = des_sim, color = scenario)) + geom_line()
+
+#### Calculate PoU and Number Undernourished ####
 result[, pou := poldat::estimate_undernourishment(des_sim, cv, mder, population)$prevalence_of_undernourishment]
 result[, nou := poldat::estimate_undernourishment(des_sim, cv, mder, population)$number_undernourished]
-
 
 #### Aggregated results ####
 
@@ -231,7 +247,9 @@ global_agg <- result[, .(
 ), by = .(scenario, year, sim)]
 global_agg[, total_des := des * population]
 
-saveRDS(global_agg, file.path("results", simulation_alternative, cv_approach, "global_agg.rds"))
+
+saveRDS(global_agg, file.path("results", paste0("timeint", TIME_INTERVAL), simulation_alternative, cv_approach, "global_agg.rds"))
+
 
 country_agg <- result[, .(
 	nou = sum(nou, na.rm = TRUE),
@@ -248,7 +266,8 @@ country_agg <- result[, .(
 ), by = .(scenario, gwcode, year)]
 country_agg[, total_des := des * population]
 
-saveRDS(country_agg, file.path("results", simulation_alternative, cv_approach, "country_agg.rds"))
+
+saveRDS(country_agg, file.path("results", paste0("timeint", TIME_INTERVAL), simulation_alternative, cv_approach, "country_agg.rds"))
 
 global_hist <- main_df[gwcode %in% unique(result$gwcode)]
 global_hist[, nou := poldat::estimate_undernourishment(des, cv, mder, population)$number_undernourished]
@@ -272,4 +291,5 @@ by = year
 global_hist[, total_des := des * population]
 global_hist <- na.omit(global_hist)
 
-saveRDS(global_hist, file.path("results", "global_hist.rds"))
+saveRDS(global_hist, file.path("results", paste0("timeint", TIME_INTERVAL), "global_hist.rds"))
+

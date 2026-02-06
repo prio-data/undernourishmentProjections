@@ -1,24 +1,43 @@
-if(simulation_alternative == "no_conflict_effect"){
-	f_cv <- pdiff(cv, NLAG) ~
-		plag(pgrowth(gdppc, 3), NLAG) +
-		plag(pdiff(tx90pgs, 3), NLAG) |
-		plag(log(gdppc), NLAG) +
-		plag(v2x_polyarchy, NLAG) +
-		plag(I(v2x_polyarchy^2), NLAG)
+if(TIME_INTERVAL != 1){
+	if(simulation_alternative == "no_conflict_effect"){
+		f_cv <- pdiff(cv, 1) ~
+			plag(pgrowth(gdppc, 1), 1) +
+			plag(pdiff(tx90pgs, 1), 1) |
+			plag(log(gdppc), 1) +
+			plag(v2x_polyarchy, 1) +
+			plag(I(v2x_polyarchy^2), 1)
+	} else{
+		f_cv <- pdiff(cv, 1) ~
+			plag(I(best>1000), 1) +
+			plag(pgrowth(gdppc, 1), 1) +
+			plag(pdiff(tx90pgs, 1), 1) |
+			plag(log(gdppc), 1) +
+			plag(v2x_polyarchy, 1) +
+			plag(I(v2x_polyarchy^2), 1)
+	}
 } else{
-	f_cv <- pdiff(cv, NLAG) ~
-		plag(I(best>1000), NLAG) +
-		plag(pgrowth(gdppc, 3), NLAG) +
-		plag(pdiff(tx90pgs, 3), NLAG) |
-		plag(log(gdppc), NLAG) +
-		plag(v2x_polyarchy, NLAG) +
-		plag(I(v2x_polyarchy^2), NLAG)
+	if(simulation_alternative == "no_conflict_effect"){
+		f_cv <- pdiff(cv, 1) ~
+			plag(pgrowth(gdppc, 3), 1) +
+			plag(pdiff(tx90pgs, 3), 1) |
+			plag(log(gdppc), 1) +
+			plag(v2x_polyarchy, 1) +
+			plag(I(v2x_polyarchy^2), 1)
+	} else{
+		f_cv <- pdiff(cv, 1) ~
+			plag(I(best>1000), 1) +
+			plag(pgrowth(gdppc, 3), 1) +
+			plag(pdiff(tx90pgs, 3), 1) |
+			plag(log(gdppc), 1) +
+			plag(v2x_polyarchy, 1) +
+			plag(I(v2x_polyarchy^2), 1)
+	}
 }
 
-fit_cv <- hetero(f_cv, data = main_df, panel.id = ~ gwcode + year, method = "nlm")
+fit_cv <- hetero(f_cv, data = main_df, panel.id = ~ gwcode + period, method = "nlm")
 
 # Just do this once
-if(simulation_alternative == "base" & cv_approach == "regression" & NLAG == 1){
+if(simulation_alternative == "base" & cv_approach == "regression" & TIME_INTERVAL == 1){
 	main_df[, cv_variance := sd(cv, na.rm = T), .(gwcode)]
 	main_df[, some_conflict := sum(best, na.rm = T) > 0, .(gwcode)]
 	main_df[, developing := max(gdppc, na.rm = T) < 5000, .(gwcode)]

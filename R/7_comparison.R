@@ -316,3 +316,34 @@ E <- ggplot(ssp5_map) +
 MAP_DIFF_POU <- A + B + C + D + E + plot_layout(guides = "collect") + plot_annotation(caption = "Base - No conf approach, 2050") &
 	theme_bw(base_size = 24)
 ggsave("figures/pou_base_vs_noconf_map.png", MAP_DIFF_POU, device = ragg_png,  width = 12, height = 5, scale = 1.5)
+
+
+#### Compare time aggregations ####
+time_agg_fnames <- file.path("results", paste0("timeint", c(3, 5)) , "base", "regression", "global_agg.rds")
+time_agg_fnames <- c(time_agg_fnames, file.path("results", "base", "regression", "global_agg.rds"))
+time_agg <- lapply(time_agg_fnames, readRDS)
+names(time_agg) <- c(paste0("timeint", c(3, 5)), "timeint1")
+time_agg <- dplyr::bind_rows(time_agg, .id = "approach")
+
+time_plots_data <- rbindlist(lapply(c("gdppc", "pou", "des", "nou", "cv", "cv_non_weight", "tx90pgs", "rx5daygs"), function(v) {
+	summarize_quantiles(time_agg, v)
+}))
+
+
+POU <- base_plot("pou", "PoU", time_plots_data)
+NOU <- base_plot("nou", "Under-\nnourished", time_plots_data)
+DES <- base_plot("des", "DES", time_plots_data)
+CV <- base_plot("cv", "CV", time_plots_data)
+GDPPC <- base_plot("gdppc", "GDPPC", time_plots_data)
+TX90 <- base_plot("tx90pgs", "TX90", time_plots_data)
+
+CV / DES / POU / NOU + plot_layout(ncol = 1, guides = "collect", axes = "collect") &
+	theme_bw(base_size = 24) &
+	theme(legend.position = "bottom",
+				legend.box = "vertical") &
+	scale_color_manual("Scenario", values = plotting_colors) &
+	scale_fill_manual("Scenario", values = plotting_colors) &
+	scale_linetype_discrete("Approach") &
+	scale_x_continuous(breaks = c(2024, 2050))
+ggsave("figures/time_approach_comparison.png", device = ragg_png,  width = 12, height = 12, scale = 1.5)
+
