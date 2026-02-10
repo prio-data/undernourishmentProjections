@@ -184,6 +184,8 @@ if(cv_approach == "regression"){
 	result <- result[year>=2024]
 	result[, cv_sim := cv[1] + cumsum(.pdi1_cv_sim), by = .(scenario, sim, gwcode)]
 	result$cv <- result$cv_sim
+} else{
+	result <- all_projections # then CV was calculated manually
 }
 
 result[, .(scenario, gwcode, sim, year, cv, best)] |>

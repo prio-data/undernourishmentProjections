@@ -116,11 +116,11 @@ GDPPC / CV / DES / POU / NOU / TX90 / RX5DAY + plot_layout(ncol = 1, guides = "c
 	scale_x_continuous(breaks = c(2024, 2050))
 ggsave("figures/approach_comparison.png", device = ragg_png,  width = 12, height = 16, scale = 1.5)
 
-POU <- plot_without_historic("pou", "PoU")
-NOU <- plot_without_historic("nou", "Under-\nnourished")
-DES <- plot_without_historic("des", "DES")
-CV <- plot_without_historic("cv", "CV")
-GDPPC <- plot_without_historic("gdppc", "GDPPC")
+POU <- plot_without_historic("pou", "PoU", plots_data)
+NOU <- plot_without_historic("nou", "Under-\nnourished", plots_data)
+DES <- plot_without_historic("des", "DES", plots_data)
+CV <- plot_without_historic("cv", "CV", plots_data)
+GDPPC <- plot_without_historic("gdppc", "GDPPC", plots_data)
 
 GDPPC / CV / DES / POU / NOU / TX90 / RX5DAY + plot_layout(ncol = 1, guides = "collect", axes = "collect") &
 	theme_bw(base_size = 24) &
@@ -135,7 +135,7 @@ ggsave("figures/approach_comparison_without_historic.png", device = ragg_png,  w
 
 
 #### Only the differences ####
-summarize_diff <- function(dt, var, by_cols = c("scenario", "year"), baseline = "base") {
+summarize_diff <- function(dt, var, by_cols = c("scenario", "year"), baseline = "base-regression") {
 	# Compute quantiles by approach
 	agg <- dt[, .(
 		q025 = quantile(get(var), 0.025, na.rm = TRUE),
@@ -177,14 +177,12 @@ diff_data <- rbindlist(lapply(c("gdppc", "pou", "des", "nou", "cv", "tx90pgs"), 
 	summarize_diff(global_agg, v)[, variable := v]
 }))
 
-#diff_data <- diff_data[approach %in% c("base", "no_conflict_effect")]
 
-
-POU <- diff_plot("pou", "PoU", "no_conflict_effect")
-NOU <- diff_plot("nou", "Under-\nnourished", "no_conflict_effect")
-GDPPC <- diff_plot("gdppc", "GDPPC", "no_conflict_effect")
-DES <- diff_plot("des", "DES", "no_conflict_effect")
-CV <- diff_plot("cv", "CV", "no_conflict_effect")
+POU <- diff_plot("pou", "PoU", "no_conflict_effect-regression")
+NOU <- diff_plot("nou", "Under-\nnourished", "no_conflict_effect-regression")
+GDPPC <- diff_plot("gdppc", "GDPPC", "no_conflict_effect-regression")
+DES <- diff_plot("des", "DES", "no_conflict_effect-regression")
+CV <- diff_plot("cv", "CV", "no_conflict_effect-regression")
 
 layout <- "
 CCAA
@@ -211,11 +209,11 @@ ragg_png <- function(...) ragg::agg_png(..., res = 300, units = "in")
 ggsave("figures/approach_comparison_no_conflict_diff_expanded.png", device = ragg_png,  width = 12, height = 4, scale = 1.5)
 
 
-POU <- diff_plot("pou", "PoU", "constant_democracy")
-NOU <- diff_plot("nou", "Under-\nnourished", "constant_democracy")
-GDPPC <- diff_plot("gdppc", "GDPPC", "constant_democracy")
-DES <- diff_plot("des", "DES", "constant_democracy")
-CV <- diff_plot("cv", "CV", "constant_democracy")
+POU <- diff_plot("pou", "PoU", "constant_democracy-regression")
+NOU <- diff_plot("nou", "Under-\nnourished", "constant_democracy-regression")
+GDPPC <- diff_plot("gdppc", "GDPPC", "constant_democracy-regression")
+DES <- diff_plot("des", "DES", "constant_democracy-regression")
+CV <- diff_plot("cv", "CV", "constant_democracy-regression")
 
 layout <- "
 CCAA
@@ -229,11 +227,11 @@ DES + POU + NOU + plot_layout(design = layout, guides = "collect", axes = "colle
 ragg_png <- function(...) ragg::agg_png(..., res = 300, units = "in")
 ggsave("figures/approach_comparison_constant_democracy_diff.png", device = ragg_png,  width = 12, height = 4, scale = 1.5)
 
-POU <- diff_plot("pou", "PoU", "constant_climate")
-NOU <- diff_plot("nou", "Under-\nnourished", "constant_climate")
-GDPPC <- diff_plot("gdppc", "GDPPC", "constant_climate")
-DES <- diff_plot("des", "DES", "constant_climate")
-CV <- diff_plot("cv", "CV", "constant_climate")
+POU <- diff_plot("pou", "PoU", "constant_climate-regression")
+NOU <- diff_plot("nou", "Under-\nnourished", "constant_climate-regression")
+GDPPC <- diff_plot("gdppc", "GDPPC", "constant_climate-regression")
+DES <- diff_plot("des", "DES", "constant_climate-regression")
+CV <- diff_plot("cv", "CV", "constant_climate-regression")
 
 layout <- "
 CCAA
