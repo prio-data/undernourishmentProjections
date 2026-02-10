@@ -53,7 +53,7 @@ simulation_alternatives <- c("base", "constant_democracy", "constant_climate", "
 # CV projections
 cv_approaches <- c("regression", "manual")
 
-TIME_INTERVAL <- 5
+TIME_INTERVAL <- 1
 
 # cv_approach <- "regression"
 # simulation_alternative <- "base"

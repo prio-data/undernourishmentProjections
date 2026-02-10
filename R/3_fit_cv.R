@@ -38,41 +38,33 @@ fit_cv <- hetero(f_cv, data = main_df, panel.id = ~ gwcode + period, method = "n
 
 # Just do this once
 if(simulation_alternative == "base" & cv_approach == "regression" & TIME_INTERVAL == 1){
-	main_df[, cv_variance := sd(cv, na.rm = T), .(gwcode)]
-	main_df[, some_conflict := sum(best, na.rm = T) > 0, .(gwcode)]
-	main_df[, developing := max(gdppc, na.rm = T) < 5000, .(gwcode)]
-
-	hist(main_df$cv_variance)
-
-	cv_data <- main_df[cv_variance > 0.01 & some_conflict & developing]
-
-	f1 <- pdiff(cv, nlag) ~
+	f1 <- pdiff(cv, 1) ~
 		plag(pmsum(yt01$transform(best), 3), 1) +
 		plag(yt01$transform(best), 1)
-	f2 <- pdiff(cv, nlag) ~
+	f2 <- pdiff(cv, 1) ~
 		plag(pmsum(yt01$transform(best), 3), 1) +
 		plag(pgrowth(population, 3)) |
 		plag(yt01$transform(best), 1) +
-		plag(log(population), nlag)
-	f3 <- pdiff(cv, nlag) ~
+		plag(log(population), 1)
+	f3 <- pdiff(cv, 1) ~
 		plag(pmsum(yt01$transform(best), 3), 1) +
 		plag(pgrowth(population, 3)) +
 		plag(pgrowth(gdppc, 3), 1) |
 		plag(yt01$transform(best), 1) +
-		plag(log(population), nlag) +
-		plag(log(gdppc), nlag)
-	f4 <- pdiff(cv, nlag) ~
+		plag(log(population), 1) +
+		plag(log(gdppc), 1)
+	f4 <- pdiff(cv, 1) ~
 		plag(pmsum(yt01$transform(best), 3), 1) +
 		plag(pgrowth(population, 3)) +
 		plag(pgrowth(gdppc, 3), 1) +
 		plag(pdiff(tx90pgs, 3), 1) +
 		plag(pdiff(rx5daygs, 3), 1) |
 		plag(yt01$transform(best), 1) +
-		plag(log(population), nlag) +
-		plag(log(gdppc), nlag) +
+		plag(log(population), 1) +
+		plag(log(gdppc), 1) +
 		plag(tx90pgs, 1) +
 		plag(rx5daygs, 1)
-	f5 <- pdiff(cv, nlag) ~
+	f5 <- pdiff(cv, 1) ~
 		plag(pmsum(yt01$transform(best), 3), 1) +
 		plag(pgrowth(population, 3)) +
 		plag(pgrowth(gdppc, 3), 1) +
@@ -81,40 +73,40 @@ if(simulation_alternative == "base" & cv_approach == "regression" & TIME_INTERVA
 		plag(pdiff(v2x_polyarchy, 3), 1) +
 		plag(pdiff(I(v2x_polyarchy^2), 3), 1) |
 		plag(yt01$transform(best), 1) +
-		plag(log(population), nlag) +
-		plag(log(gdppc), nlag) +
+		plag(log(population), 1) +
+		plag(log(gdppc), 1) +
 		plag(tx90pgs, 1) +
 		plag(rx5daygs, 1) +
 		plag(v2x_polyarchy, 1) +
 		plag(I(v2x_polyarchy^2), 1)
-	f6 <- pdiff(cv, nlag) ~
+	f6 <- pdiff(cv, 1) ~
 		plag(pgrowth(gdppc, 3), 1) +
 		plag(pdiff(tx90pgs, 3), 1) +
 		plag(pdiff(rx5daygs, 3), 1) |
 		plag(yt01$transform(best), 1) +
-		plag(log(gdppc), nlag) +
+		plag(log(gdppc), 1) +
 		plag(tx90pgs, 1) +
 		plag(rx5daygs, 1) +
 		plag(v2x_polyarchy, 1) +
 		plag(I(v2x_polyarchy^2), 1)
-	f7 <- pdiff(cv, nlag) ~
+	f7 <- pdiff(cv, 1) ~
 		plag(pmsum(I(best>1000), 3), 1) +
 		plag(pgrowth(gdppc, 3), 1) +
 		plag(pdiff(tx90pgs, 3), 1) +
 		plag(pdiff(rx5daygs, 3), 1) |
 		plag(yt01$transform(best), 1) +
-		plag(log(gdppc), nlag) +
+		plag(log(gdppc), 1) +
 		plag(tx90pgs, 1) +
 		plag(rx5daygs, 1) +
 		plag(v2x_polyarchy, 1) +
 		plag(I(v2x_polyarchy^2), 1)
-	f8 <- pdiff(cv, nlag) ~
+	f8 <- pdiff(cv, 1) ~
 		plag(pmsum(I(best>1000), 3), 1) +
 		plag(pgrowth(gdppc, 3), 1) +
 		plag(pdiff(tx90pgs, 3), 1) +
 		plag(pdiff(rx5daygs, 3), 1) |
 		plag(yt01$transform(best), 1) +
-		plag(log(gdppc), nlag) +
+		plag(log(gdppc), 1) +
 		plag(tx90pgs, 1) +
 		plag(rx5daygs, 1) +
 		plag(v2x_polyarchy, 1) +
@@ -122,29 +114,29 @@ if(simulation_alternative == "base" & cv_approach == "regression" & TIME_INTERVA
 		plag(spei6gs, 1)
 
 
-	f9 <- pdiff(cv, nlag) ~
+	f9 <- pdiff(cv, 1) ~
 		plag(I(best>1000), 1) +
 		plag(pgrowth(gdppc, 3), 1) +
 		plag(pdiff(tx90pgs, 3), 1) |
-		plag(log(gdppc), nlag) +
+		plag(log(gdppc), 1) +
 		plag(v2x_polyarchy, 1) +
 		plag(I(v2x_polyarchy^2), 1)
 
-	f10 <- pdiff(cv, nlag) ~
+	f10 <- pdiff(cv, 1) ~
 		plag(I(best>1000), 1) +
 		plag(pgrowth(gdppc, 3), 1) +
 		plag(pdiff(tx90pgs, 3), 1) |
 		plag(yt01$transform(best), 1) +
-		plag(log(gdppc), nlag) +
+		plag(log(gdppc), 1) +
 		plag(v2x_polyarchy, 1) +
 		plag(I(v2x_polyarchy^2), 1)
 
-	f11 <- pdiff(cv, nlag) ~
+	f11 <- pdiff(cv, 1) ~
 		plag(I(best>1000), 1) +
 		plag(pgrowth(gdppc, 3), 1) +
 		plag(pdiff(tx90pgs, 3), 1) |
 		plag(yt01$transform(best), 1) +
-		plag(log(gdppc), nlag) +
+		plag(log(gdppc), 1) +
 		plag(v2x_polyarchy, 1) +
 		plag(I(v2x_polyarchy^2), 1) +
 		plag(tx90pgs, 1) +
@@ -192,29 +184,54 @@ if(simulation_alternative == "base" & cv_approach == "regression" & TIME_INTERVA
 
 	#modelsummary(comp$refitted_models)
 
-	fit_cv1_limited <- hetero(f1, data = cv_data, panel.id = ~ gwcode + year, method = "nlm")
-	fit_cv2_limited <- hetero(f2, data = cv_data, panel.id = ~ gwcode + year, method = "nlm")
-	fit_cv3_limited <- hetero(f3, data = cv_data, panel.id = ~ gwcode + year, method = "nlm")
-	fit_cv4_limited <- hetero(f4, data = cv_data, panel.id = ~ gwcode + year, method = "nlm")
-	fit_cv5_limited <- hetero(f5, data = cv_data, panel.id = ~ gwcode + year, method = "nlm")
-	fit_cv6_limited <- hetero(f6, data = cv_data, panel.id = ~ gwcode + year, method = "nlm")
-	fit_cv7_limited <- hetero(f7, data = cv_data, panel.id = ~ gwcode + year, method = "nlm")
-	fit_cv8_limited <- hetero(f8, data = main_df, panel.id = ~ gwcode + year, method = "nlm")
-	fit_cv9_limited <- hetero(f9, data = main_df, panel.id = ~ gwcode + year, method = "nlm")
+	main_df[, cv_variance := sd(cv, na.rm = T), .(gwcode)]
+	main_df[, some_conflict := sum(best, na.rm = T) > 0, .(gwcode)]
+	main_df[, developing := max(gdppc, na.rm = T) < 10000, .(gwcode)]
+	main_df[, low_des := max(des, na.rm = T) < 2500, .(gwcode)]
+	main_df[, high_des := max(des, na.rm = T) > 3500, .(gwcode)]
 
-	comp <- compare_models(fit_cv1_limited,
-												 fit_cv2_limited,
-												 fit_cv3_limited,
-												 fit_cv4_limited,
-												 fit_cv5_limited,
-												 fit_cv6_limited,
-												 fit_cv7_limited,
-												 fit_cv8_limited,
-												 fit_cv9_limited, original_data = main_df, test = T)
-	comp
+	hist(main_df$cv_variance)
 
-	summary(fit_cv9)
-	summary(fit_cv9_limited)
+	cv_base <- fit_cv9
+	cv_variance <- hetero(f9, data = main_df[cv_variance > 0.01], panel.id = ~ gwcode + year, method = "nlm")
+	cv_conflict <- hetero(f9, data = main_df[some_conflict == TRUE], panel.id = ~ gwcode + year, method = "nlm")
+	cv_developing <- hetero(f9, data = main_df[developing == TRUE], panel.id = ~ gwcode + year, method = "nlm")
+	cv_low_des <- hetero(f9, data = main_df[low_des == TRUE], panel.id = ~ gwcode + year, method = "nlm")
+	cv_high_des <- hetero(f9, data = main_df[high_des == TRUE], panel.id = ~ gwcode + year, method = "nlm")
+
+	alt_cv_subsets <- hetero_table("base" = cv_base,
+							 "varying_cv" = cv_variance,
+							 "conflict_history" =  cv_conflict,
+							 "GDPPC < 10K" = cv_developing,
+							 "DES < 2500" = cv_low_des,
+							 "DES > 3500" = cv_high_des,
+							 output = "gt", label_style = "latex",
+							 add_args = list(fmt = fmt_decimal(digits = 4)))
+
+	alt_cv_subsets  |>
+		gt::gtsave(file.path("tables", simulation_alternative, "cv_alt_subsets.tex"),
+							 label = "tab:cv_alt_subsets")
+
+
+	cv_dem <- fit_cv5
+	cv_variance <- hetero(f5, data = main_df[cv_variance > 0.01], panel.id = ~ gwcode + year, method = "nlm")
+	cv_conflict <- hetero(f5, data = main_df[some_conflict == TRUE], panel.id = ~ gwcode + year, method = "nlm")
+	cv_developing <- hetero(f5, data = main_df[developing == TRUE], panel.id = ~ gwcode + year, method = "nlm")
+	cv_low_des <- hetero(f5, data = main_df[low_des == TRUE], panel.id = ~ gwcode + year, method = "nlm")
+	cv_high_des <- hetero(f5, data = main_df[high_des == TRUE], panel.id = ~ gwcode + year, method = "nlm")
+
+	alt_cv_subsets_dem <- hetero_table("base" = cv_dem,
+							 "varying_cv" = cv_variance,
+							 "conflict_history" =  cv_conflict,
+							 "GDPPC < 10K" = cv_developing,
+							 "DES < 2500" = cv_low_des,
+							 "DES > 3500" = cv_high_des,
+							 output = "gt", label_style = "latex",
+							 add_args = list(fmt = fmt_decimal(digits = 4)))
+
+	alt_cv_subsets_dem  |>
+		gt::gtsave(file.path("tables", simulation_alternative, "cv_alt_subsets_dem.tex"),
+							 label = "tab:cv_alt_subsets_dem")
 
 
 	cplot_fit_cv_mean <- coefplot(fit_cv, which = "mean") +
@@ -231,7 +248,7 @@ if(simulation_alternative == "base" & cv_approach == "regression" & TIME_INTERVA
 
 	cplot_fit_des_mean <- coefplot(fit_des, which = "mean") +
 		scale_x_discrete(labels = c(
-			".pl1_ms_yt01_transform_best_3" = "BRD_MA3",
+			".pl1_ms_yt01_transform_best_3" = "BRD_MS3",
 			".pl1_g_gdppc_3" = "GDPPC_∆P3",
 			".pl1_d_tx90pgs_3" = "TX90_∆3",
 			".pl1_d_v2x_polyarchy_3" = "DEM_∆3",

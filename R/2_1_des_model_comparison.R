@@ -246,69 +246,6 @@ hetero_table("base" = comp$refitted_models[[1]],
 # At the same time, it is not clear how such fixed effects should be assumed to change into the future.
 
 
-arch1 <- hetero(
-	pdiff(des, 1) ~
-		plag(pmsum(yt01$transform(best), 3), 1) +
-		plag(pdiff(tx90pgs, 3), 1) +
-		plag(pgrowth(gdppc, 3), 1) +
-		plag(pdiff(v2x_polyarchy, 3), 1) +
-		plag(pdiff(I(v2x_polyarchy^2), 3), 1) +
-		plag(pgrowth(population, 3), 1)
-	|
-		plag(yt01$transform(best), 1) +
-		plag(tx90pgs, 1) +
-		plag(log(gdppc), 1) +
-		plag(v2x_polyarchy, 1) +
-		plag(I(v2x_polyarchy^2), 1) +
-		plag(log(population), 1) +
-		arch(1),
-	data = main_df,
-	panel.id = ~ gwcode + year,
-	method = "nlm"
-)
-comp <- compare_models(base, arch1, original_data = main_df, test = T)
-comp
-print(xtable(comp$comparison,
-						 label = "tab:des_arch1_gof",
-						 caption = "$/Delta DES$ models, base vs adding ARCH(1)",
-						 digits = 1), booktabs = TRUE,
-			file = file.path("tables", simulation_alternative, "des_arch1_gof.tex"))
-hetero_table("base" = comp$refitted_models[[1]],
-						 "add_arch1" = comp$refitted_models[[2]])
-# The variance is auto-regressive. I.e., if there was much change in DES the year before, chances are higher of change the next year.
-
-arch10 <- hetero(
-	pdiff(des, 1) ~
-		plag(pmsum(yt01$transform(best), 3), 1) +
-		plag(pdiff(tx90pgs, 3), 1) +
-		plag(pgrowth(gdppc, 3), 1) +
-		plag(pdiff(v2x_polyarchy, 3), 1) +
-		plag(pdiff(I(v2x_polyarchy^2), 3), 1) +
-		plag(pgrowth(population, 3), 1)
-	|
-		plag(yt01$transform(best), 1) +
-		plag(tx90pgs, 1) +
-		plag(log(gdppc), 1) +
-		plag(v2x_polyarchy, 1) +
-		plag(I(v2x_polyarchy^2), 1) +
-		plag(log(population), 1) +
-		arch(10),
-	data = main_df,
-	panel.id = ~ gwcode + year,
-	method = "nlm"
-)
-comp <- compare_models(base, arch10, original_data = main_df, test = T)
-comp
-print(xtable(comp$comparison,
-						 label = "tab:des_arch10_gof",
-						 caption = "$/Delta DES$ models, base vs adding ARCH(10)",
-						 digits = 1), booktabs = TRUE,
-			file = file.path("tables", simulation_alternative, "des_arch10_gof.tex"))
-hetero_table("base" = comp$refitted_models[[1]],
-						 "arch10" = comp$refitted_models[[2]])
-# There is relatively less to gain from further auto-regressive terms.
-
-
 add_extreme_precipitation <- hetero(
 	pdiff(des, 1) ~
 		plag(pmsum(yt01$transform(best), 3), 1) +
@@ -403,7 +340,7 @@ hetero_table("base" = comp$refitted_models[[1]],
 # Not better just adding SPEI6
 
 # All
-comp <- compare_models(base, drop_demsq, drop_variance, add_country_variance, arch1, arch10, add_extreme_precipitation, swap_spei6, add_spei6, original_data = main_df, test = T)
+comp <- compare_models(base, drop_demsq, drop_variance, add_country_variance, add_extreme_precipitation, swap_spei6, add_spei6, original_data = main_df, test = T)
 comp
 
 print(xtable(comp$comparison,
@@ -416,11 +353,9 @@ alt_des_specifications <- hetero_table("base" = comp$refitted_models[[1]],
 						 "drop_demsq" = comp$refitted_models[[2]],
 						 "drop_variance" = comp$refitted_models[[3]],
 						 "add_country_variance" = comp$refitted_models[[4]],
-						 "arch1" = comp$refitted_models[[5]],
-						 "arch10" = comp$refitted_models[[6]],
-						 "add_extreme_precipitation" = comp$refitted_models[[7]],
-						 "swap_spei6" = comp$refitted_models[[8]],
-						 "add_spei6" = comp$refitted_models[[9]],
+						 "add_extreme_precipitation" = comp$refitted_models[[5]],
+						 "swap_spei6" = comp$refitted_models[[6]],
+						 "add_spei6" = comp$refitted_models[[7]],
 						 output = "gt", label_style = "latex")
 
 alt_des_specifications  |>
@@ -497,3 +432,29 @@ fit_mv3_2000 <- hetero(
 
 hetero_table(base, fit_mv3_2000)
 # Quite similar results
+
+
+main_df[, cv_variance := sd(cv, na.rm = T), .(gwcode)]
+main_df[, some_conflict := sum(best, na.rm = T) > 0, .(gwcode)]
+main_df[, developing := max(gdppc, na.rm = T) < 10000, .(gwcode)]
+main_df[, low_cv := max(cv, na.rm = T) < 0.23, .(gwcode)]
+main_df[, high_cv := max(cv, na.rm = T) > 0.3, .(gwcode)]
+
+des_variance <- hetero(f_base, data = main_df[cv_variance > 0.01], panel.id = ~ gwcode + year, method = "nlm")
+des_conflict <- hetero(f_base, data = main_df[some_conflict == TRUE], panel.id = ~ gwcode + year, method = "nlm")
+des_developing <- hetero(f_base, data = main_df[developing == TRUE], panel.id = ~ gwcode + year, method = "nlm")
+des_low_cv <- hetero(f_base, data = main_df[low_cv == TRUE], panel.id = ~ gwcode + year, method = "nlm")
+des_high_cv <- hetero(f_base, data = main_df[high_cv == TRUE], panel.id = ~ gwcode + year, method = "nlm")
+
+alt_des_subsets <- hetero_table("base" = base,
+															 "varying_cv" = des_variance,
+															 "conflict_history" =  des_conflict,
+															 "GDPPC < 10K" = des_developing,
+															 "CV < 0.23" = des_low_cv,
+															 "CV > 0.3" = des_high_cv,
+															 output = "gt", label_style = "latex",
+															 add_args = list(fmt = fmt_decimal(digits = 4)))
+
+alt_des_subsets  |>
+	gt::gtsave(file.path("tables", simulation_alternative, "des_alt_subsets.tex"),
+						 label = "tab:des_alt_subsets")

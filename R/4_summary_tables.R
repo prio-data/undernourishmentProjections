@@ -105,13 +105,13 @@ summarytable_cv <- fitted_df_cv |>
 		label = list(
 			gwcode ~ "GW Countrycode",
 			year ~ "Year",
-			.pdi1_cv = "∆CV",
-			.pl1_I_best_1000 = "BRD>1000",
-			.pl1_g_gdppc_3 = "GDPPC_∆P3",
-			.pl1_d_tx90pgs_3 = "TX90_∆3",
-			.pl1_log_gdppc = "lGDPPC",
-			.pl1_v2x_polyarchy = "DEM",
-			.pl1_I_v2x_polyarchy_2 = "DEMsq"
+			.pdi1_cv ~ "ΔCV",
+			.pl1_I_best_1000 ~ "BRD>1000",
+			.pl1_g_gdppc_3 ~ "GDPPC_ΔP3",
+			.pl1_d_tx90pgs_3 ~ "TX90_Δ3",
+			.pl1_log_gdppc ~ "lGDPPC",
+			.pl1_v2x_polyarchy ~ "DEM",
+			.pl1_I_v2x_polyarchy_2 ~ "DEMsq"
 		),
 		statistic = list(-all_of(c("year", "gwcode")) ~ "{median} ({min}, {max})",
 										 all_of("year") ~ "{min} to {max}",
@@ -125,11 +125,18 @@ summarytable |> gtsummary::as_gt()  |> gt::gtsave(file.path("tables", simulation
 summarytable_des |> gtsummary::as_gt() |> gt::gtsave(file.path("tables", simulation_alternative, "summary_table_des.tex"), label = "tab:summary_table_des")
 summarytable_cv |> gtsummary::as_gt() |> gt::gtsave(file.path("tables", simulation_alternative, "summary_table_cv.tex"), label = "tab:summary_table_cv")
 
-ggplot(main_df, aes(x = cv, y = des)) + geom_point() + geom_smooth(method = "lm", se = TRUE) +
+A <- ggplot(main_df, aes(x = cv, y = des)) + geom_point(shape = 20, alpha = 0.3) + geom_smooth(method = "lm", se = TRUE) +
 	theme_bw(base_size = 24) + ylab("DES") + xlab("CV")
-ggsave(file.path("figures", simulation_alternative, "cv_against_des.png"), device = ragg_png, scale = 1.5, width = 8, height = 6)
+ggsave(file.path("figures", simulation_alternative, "cv_against_des.png"), A, device = ragg_png, scale = 1.5, width = 6, height = 6)
+B <- ggplot(main_df, aes(x = year, y = des)) + geom_point(shape = 20, alpha = 0.3) + geom_smooth(se = TRUE) +
+	theme_bw(base_size = 24) + ylab("DES") + xlab("Year")
+ggsave(file.path("figures", simulation_alternative, "des_against_year.png"), B, device = ragg_png, scale = 1.5, width = 6, height = 6)
+C <- ggplot(main_df[year >=2000], aes(x = year, y = cv)) + geom_point(shape = 20, alpha = 0.3) + geom_smooth(se = TRUE) +
+	theme_bw(base_size = 24) + ylab("DES") + xlab("Year")
+ggsave(file.path("figures", simulation_alternative, "cv_against_year.png"), C, device = ragg_png, scale = 1.5, width = 6, height = 6)
 
-
+A + B + C + patchwork::plot_layout(axes = "collect")
+ggsave(file.path("figures", simulation_alternative, "cv_des_year.png"), device = ragg_png, scale = 1.5, width = 12, height = 8)
 
 nlag <- 1
 # Plot continuous conflict instead of the binary data
@@ -231,3 +238,23 @@ ragg_png <- function(...) ragg::agg_png(..., res = 300, units = "in")
 ggsave(file.path("figures", simulation_alternative, "des_against_covariates.png"), device = ragg_png, width = 12, height = 12)
 
 
+to_plot <- main_df[gwcode %in% c(2, 372, 530, 750), c("gwcode", "year", "cv", "des")]
+to_plot$cname <- case_when(to_plot$gwcode == 2 ~ "USA",
+													 to_plot$gwcode == 372 ~ "Georgia",
+													 to_plot$gwcode == 530 ~ "Ethiopia",
+													 to_plot$gwcode == 750 ~ "India")
+
+A <- ggplot(to_plot[year >= 2000], aes(x = year, y = cv)) +
+	geom_line() +
+	facet_wrap(~cname) +
+	ylab("CV") + xlab("Year") +
+	theme_bw(base_size = 24)
+
+B <- ggplot(to_plot, aes(x = year, y = des)) +
+	geom_line() +
+	facet_wrap(~cname) +
+	ylab("DES") + xlab("Year") +
+	theme_bw(base_size = 24)
+
+A + B + patchwork::plot_layout(axes = "collect")
+ggsave(file.path("figures", "historical_des_cv_selected_countries.png"), device = ragg_png, width = 12, height = 8, scale = 1.5)

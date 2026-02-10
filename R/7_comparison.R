@@ -1,14 +1,17 @@
 
 
-global_agg_fnames <- file.path("results", simulation_alternatives, "regression", "global_agg.rds")
-global_agg <- lapply(global_agg_fnames, readRDS)
-names(global_agg) <- simulation_alternatives
+global_agg_fnames_a <- file.path("results", simulation_alternatives, "regression", "global_agg.rds")
+global_agg_fnames_b <- file.path("results", simulation_alternatives, "manual", "global_agg.rds")
+global_agg_fnames_c <- file.path("results", paste0("timeint", c(3, 5)), "base", "regression", "global_agg.rds")
+global_agg <- lapply(c(global_agg_fnames_a, global_agg_fnames_b, global_agg_fnames_c), readRDS)
+approach_names <- c(paste(simulation_alternatives, "regression", sep = "-"), paste(simulation_alternatives, "manual", sep = "-"), paste0("timeint", c(3, 5)))
+names(global_agg) <- approach_names
 global_agg <- dplyr::bind_rows(global_agg, .id = "approach")
 
 global_hist <- readRDS("results/global_hist.rds")
 
 # Aggregate across simulations
-cols <- c("nou", "pou", "des", "mder", "cv", "best", "v2x_polyarchy", "gdppc", "population", "tx90pgs", "rx5daygs")
+cols <- c("nou", "pou", "des", "mder", "cv", "best", "v2x_polyarchy", "gdppc", "population", "tx90pgs")
 to_table <- global_agg[, lapply(.SD, median, na.rm = TRUE),
 					 by = .(approach, scenario, year),
 					 .SDcols = cols]
@@ -25,20 +28,19 @@ setnames(to_table, c(
 	"v2x_polyarchy" = "DEM",
 	"gdppc"         = "GDPPC",
 	"population"    = "POP",
-	"tx90pgs"       = "TX90",
-	"rx5daygs"      = "RX5DAY"
+	"tx90pgs"       = "TX90"
 ))
 
-for(simulation_alternative in simulation_alternatives){
-	tmp <- to_table[approach == simulation_alternative]
+for(a in approach_names){
+	tmp <- to_table[approach == a]
 	tmp <- split(tmp, ~scenario)
 	for(i in 1:5){
 		tmp[[i]] |> ungroup() |> dplyr::select(-scenario, -approach)  |>
 			gt::gt() |>
 			gt::fmt_number(c("NUN", "DES", "MDER", "BRD", "GDPPC", "POP"), decimals = 0) |>
-			gt::fmt_number(c("PoU", "CV", "DEM", "TX90", "RX5DAY"), decimals = 2) |>
-			gt::tab_header(paste("Median global population-weighted results,", names(tmp)[i], "Approach:", simulation_alternative)) |>
-			gt::gtsave(file.path("tables", simulation_alternative, paste0("main_pou_", names(tmp[i]), ".tex")))
+			gt::fmt_number(c("PoU", "CV", "DEM", "TX90"), decimals = 4) |>
+			gt::tab_header(paste("Median global population-weighted results,", names(tmp)[i], "Approach:", a)) |>
+			gt::gtsave(file.path("tables", paste0("main_pou_", a, ".tex")))
 	}
 }
 
