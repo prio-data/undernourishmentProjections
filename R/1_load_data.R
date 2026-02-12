@@ -10,9 +10,6 @@ explanatory_variables <- c("best", "gdppc", "population",
 
 main_df <- main_df[, c(unit_var, time_var, outcomes, explanatory_variables), with = FALSE]
 
-# A few countries have recorded CV under 0.2. Most other countries stop measuring CV under 0.2
-main_df$cv <- ifelse(main_df$cv < 0.2, 0.2, main_df$cv)
-
 if(TIME_INTERVAL > 1){
 	mean_vars <- setdiff(names(main_df), c("gwcode", "year", "best"))
 	main_df[, period := (year - min(year)) %/% TIME_INTERVAL, by = gwcode]

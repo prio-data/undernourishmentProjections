@@ -76,11 +76,15 @@ des_moving_window_regression <- hetero_table(
 	"des_var" = comp$refitted_models[[1]],
   "des_mv3" = comp$refitted_models[[2]],
   "des_mv5" = comp$refitted_models[[3]],
-	 output = "gt", label_style = "latex")
+	title = "$\\Delta DES$ models with different moving windows \\label{tab:des_moving_window_regression}",
+	label_style = "latex",
+	add_args = list(fmt = fmt_decimal(digits = 4),
+									escape = FALSE,
+									gof_omit = "p_mean|q_var|Panel FE|Time FE|Panel SD")
+)
 
-des_moving_window_regression  |>
-	gt::gtsave(file.path("tables", simulation_alternative, "des_moving_window_regression.tex"),
-						 label = "tab:des_moving_window_regression")
+tinytable::save_tt(alt_cv_specifications, file.path("tables", simulation_alternative, "des_moving_window_regression.tex"), overwrite = TRUE)
+
 
 # Result: Original version is slightly better, but consistent 3-year moving window is just as good in-sample. We keep mv3 for simplicity.
 base <- des_fit_mv3
@@ -356,11 +360,14 @@ alt_des_specifications <- hetero_table("base" = comp$refitted_models[[1]],
 						 "add_extreme_precipitation" = comp$refitted_models[[5]],
 						 "swap_spei6" = comp$refitted_models[[6]],
 						 "add_spei6" = comp$refitted_models[[7]],
-						 output = "gt", label_style = "latex")
+						 title = "$\\Delta DES$ model variants \\label{tab:des_alt_specifications}",
+						 label_style = "latex",
+						 add_args = list(fmt = fmt_decimal(digits = 4),
+						 								escape = FALSE,
+						 								gof_omit = "p_mean|q_var|Panel FE|Time FE|Panel SD")
+)
 
-alt_des_specifications  |>
-	gt::gtsave(file.path("tables", simulation_alternative, "des_alt_specifications.tex"),
-						 label = "tab:des_alt_specifications")
+tinytable::save_tt(alt_cv_specifications, file.path("tables", simulation_alternative, "des_alt_specifications.tex"), overwrite = TRUE)
 
 
 comp <- compare_models(base, drop_dem, drop_conf, drop_climate, drop_pop, original_data = main_df, test = T)
@@ -377,11 +384,15 @@ alt_des_specifications2 <- hetero_table("base" = comp$refitted_models[[1]],
 																			 "drop_conf" = comp$refitted_models[[3]],
 																			 "drop_climate" = comp$refitted_models[[4]],
 																			 "drop_pop" = comp$refitted_models[[5]],
-																			 output = "gt", label_style = "latex")
+																				title = "$\\Delta DES$ model variants, cont \\label{tab:des_alt_specifications2}",
+																				label_style = "latex",
+																				add_args = list(fmt = fmt_decimal(digits = 4),
+																												escape = FALSE,
+																												gof_omit = "p_mean|q_var|Panel FE|Time FE|Panel SD")
+)
 
-alt_des_specifications2  |>
-	gt::gtsave(file.path("tables", simulation_alternative, "des_alt_specifications2.tex"),
-						 label = "tab:des_alt_specifications2")
+tinytable::save_tt(alt_cv_specifications, file.path("tables", simulation_alternative, "des_alt_specifications2.tex"), overwrite = TRUE)
+
 
 
 nlag <- 3
@@ -452,9 +463,12 @@ alt_des_subsets <- hetero_table("base" = base,
 															 "GDPPC < 10K" = des_developing,
 															 "CV < 0.23" = des_low_cv,
 															 "CV > 0.3" = des_high_cv,
-															 output = "gt", label_style = "latex",
-															 add_args = list(fmt = fmt_decimal(digits = 4)))
+																title = "$\\Delta DES$ alternative subsets \\label{tab:des_alt_subsets}",
+																label_style = "latex",
+																add_args = list(fmt = fmt_decimal(digits = 4),
+																								escape = FALSE,
+																								gof_omit = "p_mean|q_var|Panel FE|Time FE|Panel SD")
+)
 
-alt_des_subsets  |>
-	gt::gtsave(file.path("tables", simulation_alternative, "des_alt_subsets.tex"),
-						 label = "tab:des_alt_subsets")
+tinytable::save_tt(alt_cv_specifications, file.path("tables", simulation_alternative, "des_alt_subsets.tex"), overwrite = TRUE)
+

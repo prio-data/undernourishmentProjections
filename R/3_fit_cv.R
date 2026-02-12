@@ -175,12 +175,14 @@ if(simulation_alternative == "base" & cv_approach == "regression" & TIME_INTERVA
 																				 "i" = comp$refitted_models[[9]],
 																				 "j" = comp$refitted_models[[10]],
 																				 "k" = comp$refitted_models[[11]],
-																				 output = "gt", label_style = "latex",
-																				 add_args = list(fmt = fmt_decimal(digits = 4)))
+																				 title = "$\\Delta CV$ alternative specifications \\label{tab:cv_alt_specifications}",
+																				 label_style = "latex",
+																				 add_args = list(fmt = fmt_decimal(digits = 4),
+																				 								escape = FALSE,
+																				 								gof_omit = "p_mean|q_var|Panel FE|Time FE|Panel SD")
+																				)
 
-	alt_cv_specifications  |>
-		gt::gtsave(file.path("tables", simulation_alternative, "cv_alt_specifications.tex"),
-							 label = "tab:cv_alt_specifications")
+	tinytable::save_tt(alt_cv_specifications, file.path("tables", simulation_alternative, "cv_alt_specifications.tex"), overwrite = TRUE)
 
 	#modelsummary(comp$refitted_models)
 
@@ -205,12 +207,14 @@ if(simulation_alternative == "base" & cv_approach == "regression" & TIME_INTERVA
 							 "GDPPC < 10K" = cv_developing,
 							 "DES < 2500" = cv_low_des,
 							 "DES > 3500" = cv_high_des,
-							 output = "gt", label_style = "latex",
-							 add_args = list(fmt = fmt_decimal(digits = 4)))
+							 title = "$\\Delta CV$ alternative data subsets \\label{tab:cv_alt_subsets}",
+							 label_style = "latex",
+							 add_args = list(fmt = fmt_decimal(digits = 4),
+							 								escape = FALSE,
+							 								gof_omit = "p_mean|q_var|Panel FE|Time FE|Panel SD")
+	)
 
-	alt_cv_subsets  |>
-		gt::gtsave(file.path("tables", simulation_alternative, "cv_alt_subsets.tex"),
-							 label = "tab:cv_alt_subsets")
+	tinytable::save_tt(alt_cv_specifications, file.path("tables", simulation_alternative, "cv_alt_subsets.tex"), overwrite = TRUE)
 
 
 	cv_dem <- fit_cv5
@@ -226,12 +230,14 @@ if(simulation_alternative == "base" & cv_approach == "regression" & TIME_INTERVA
 							 "GDPPC < 10K" = cv_developing,
 							 "DES < 2500" = cv_low_des,
 							 "DES > 3500" = cv_high_des,
-							 output = "gt", label_style = "latex",
-							 add_args = list(fmt = fmt_decimal(digits = 4)))
+							 title = "$\\Delta CV$ alternative data subsets with democracy \\label{tab:cv_alt_subsets_dem}",
+							 label_style = "latex",
+							 add_args = list(fmt = fmt_decimal(digits = 4),
+							 								escape = FALSE,
+							 								gof_omit = "p_mean|q_var|Panel FE|Time FE|Panel SD")
+	)
 
-	alt_cv_subsets_dem  |>
-		gt::gtsave(file.path("tables", simulation_alternative, "cv_alt_subsets_dem.tex"),
-							 label = "tab:cv_alt_subsets_dem")
+	tinytable::save_tt(alt_cv_specifications, file.path("tables", simulation_alternative, "cv_alt_subsets_dem.tex"), overwrite = TRUE)
 
 
 	cplot_fit_cv_mean <- coefplot(fit_cv, which = "mean") +
