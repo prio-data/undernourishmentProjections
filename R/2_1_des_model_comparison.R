@@ -83,7 +83,7 @@ des_moving_window_regression <- hetero_table(
 									gof_omit = "p_mean|q_var|Panel FE|Time FE|Panel SD")
 )
 
-tinytable::save_tt(alt_cv_specifications, file.path("tables", simulation_alternative, "des_moving_window_regression.tex"), overwrite = TRUE)
+tinytable::save_tt(des_moving_window_regression, file.path("tables", simulation_alternative, "des_moving_window_regression.tex"), overwrite = TRUE)
 
 
 # Result: Original version is slightly better, but consistent 3-year moving window is just as good in-sample. We keep mv3 for simplicity.
@@ -367,7 +367,7 @@ alt_des_specifications <- hetero_table("base" = comp$refitted_models[[1]],
 						 								gof_omit = "p_mean|q_var|Panel FE|Time FE|Panel SD")
 )
 
-tinytable::save_tt(alt_cv_specifications, file.path("tables", simulation_alternative, "des_alt_specifications.tex"), overwrite = TRUE)
+tinytable::save_tt(alt_des_specifications, file.path("tables", simulation_alternative, "des_alt_specifications.tex"), overwrite = TRUE)
 
 
 comp <- compare_models(base, drop_dem, drop_conf, drop_climate, drop_pop, original_data = main_df, test = T)
@@ -391,7 +391,7 @@ alt_des_specifications2 <- hetero_table("base" = comp$refitted_models[[1]],
 																												gof_omit = "p_mean|q_var|Panel FE|Time FE|Panel SD")
 )
 
-tinytable::save_tt(alt_cv_specifications, file.path("tables", simulation_alternative, "des_alt_specifications2.tex"), overwrite = TRUE)
+tinytable::save_tt(alt_des_specifications2, file.path("tables", simulation_alternative, "des_alt_specifications2.tex"), overwrite = TRUE)
 
 
 
@@ -470,5 +470,5 @@ alt_des_subsets <- hetero_table("base" = base,
 																								gof_omit = "p_mean|q_var|Panel FE|Time FE|Panel SD")
 )
 
-tinytable::save_tt(alt_cv_specifications, file.path("tables", simulation_alternative, "des_alt_subsets.tex"), overwrite = TRUE)
+tinytable::save_tt(alt_des_subsets, file.path("tables", simulation_alternative, "des_alt_subsets.tex"), overwrite = TRUE)
 

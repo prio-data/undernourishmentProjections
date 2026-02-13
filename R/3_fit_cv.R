@@ -214,7 +214,7 @@ if(simulation_alternative == "base" & cv_approach == "regression" & TIME_INTERVA
 							 								gof_omit = "p_mean|q_var|Panel FE|Time FE|Panel SD")
 	)
 
-	tinytable::save_tt(alt_cv_specifications, file.path("tables", simulation_alternative, "cv_alt_subsets.tex"), overwrite = TRUE)
+	tinytable::save_tt(alt_cv_subsets, file.path("tables", simulation_alternative, "cv_alt_subsets.tex"), overwrite = TRUE)
 
 
 	cv_dem <- fit_cv5
@@ -237,7 +237,7 @@ if(simulation_alternative == "base" & cv_approach == "regression" & TIME_INTERVA
 							 								gof_omit = "p_mean|q_var|Panel FE|Time FE|Panel SD")
 	)
 
-	tinytable::save_tt(alt_cv_specifications, file.path("tables", simulation_alternative, "cv_alt_subsets_dem.tex"), overwrite = TRUE)
+	tinytable::save_tt(alt_cv_subsets_dem, file.path("tables", simulation_alternative, "cv_alt_subsets_dem.tex"), overwrite = TRUE)
 
 
 	cplot_fit_cv_mean <- coefplot(fit_cv, which = "mean") +
