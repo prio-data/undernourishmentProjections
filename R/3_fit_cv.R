@@ -155,7 +155,7 @@ if(simulation_alternative == "base" & cv_approach == "regression" & TIME_INTERVA
 	fit_cv10 <- hetero(f10, data = main_df, panel.id = ~ gwcode + year, method = "nlm")
 	fit_cv11 <- hetero(f11, data = main_df, panel.id = ~ gwcode + year, method = "nlm")
 
-	comp <- compare_models(fit_cv1, fit_cv2, fit_cv3, fit_cv4, fit_cv5, fit_cv6, fit_cv7, fit_cv8, fit_cv9, fit_cv10, fit_cv11, original_data = main_df, test = T)
+	comp <- compare_models(fit_cv1, fit_cv2, fit_cv3, fit_cv4, fit_cv5, fit_cv6, fit_cv7, fit_cv9, fit_cv10, fit_cv11, original_data = main_df, test = T)
 	comp
 
 	print(xtable(comp$comparison,
@@ -174,7 +174,6 @@ if(simulation_alternative == "base" & cv_approach == "regression" & TIME_INTERVA
 																				 "h" = comp$refitted_models[[8]],
 																				 "i" = comp$refitted_models[[9]],
 																				 "j" = comp$refitted_models[[10]],
-																				 "k" = comp$refitted_models[[11]],
 																				 title = "$\\Delta CV$ alternative specifications \\label{tab:cv_alt_specifications}",
 																				 label_style = "latex",
 																				 add_args = list(fmt = fmt_decimal(digits = 4),
