@@ -344,7 +344,7 @@ hetero_table("base" = comp$refitted_models[[1]],
 # Not better just adding SPEI6
 
 # All
-comp <- compare_models(base, drop_demsq, drop_variance, add_country_variance, add_extreme_precipitation, swap_spei6, add_spei6, original_data = main_df, test = T)
+comp <- compare_models(base, drop_demsq, drop_variance, add_country_variance, add_extreme_precipitation, original_data = main_df, test = T)
 comp
 
 print(xtable(comp$comparison,
@@ -358,8 +358,6 @@ alt_des_specifications <- hetero_table("base" = comp$refitted_models[[1]],
 						 "drop_variance" = comp$refitted_models[[3]],
 						 "add_country_variance" = comp$refitted_models[[4]],
 						 "add_extreme_precipitation" = comp$refitted_models[[5]],
-						 "swap_spei6" = comp$refitted_models[[6]],
-						 "add_spei6" = comp$refitted_models[[7]],
 						 title = "$\\Delta DES$ model variants \\label{tab:des_alt_specifications}",
 						 label_style = "latex",
 						 add_args = list(fmt = fmt_decimal(digits = 4),

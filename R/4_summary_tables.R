@@ -132,11 +132,11 @@ B <- ggplot(main_df, aes(x = year, y = des)) + geom_point(shape = 20, alpha = 0.
 	theme_bw(base_size = 24) + ylab("DES") + xlab("Year")
 ggsave(file.path("figures", simulation_alternative, "des_against_year.png"), B, device = ragg_png, scale = 1.5, width = 6, height = 6)
 C <- ggplot(main_df[year >=2000], aes(x = year, y = cv)) + geom_point(shape = 20, alpha = 0.3) + geom_smooth(se = TRUE) +
-	theme_bw(base_size = 24) + ylab("DES") + xlab("Year")
+	theme_bw(base_size = 24) + ylab("CV") + xlab("Year")
 ggsave(file.path("figures", simulation_alternative, "cv_against_year.png"), C, device = ragg_png, scale = 1.5, width = 6, height = 6)
 
-A + B + C + patchwork::plot_layout(axes = "collect")
-ggsave(file.path("figures", simulation_alternative, "cv_des_year.png"), device = ragg_png, scale = 1.5, width = 12, height = 8)
+A + B + C
+ggsave(file.path("figures", simulation_alternative, "cv_des_year.png"), device = ragg_png, scale = 1.5, width = 12, height = 5)
 
 nlag <- 1
 # Plot continuous conflict instead of the binary data
