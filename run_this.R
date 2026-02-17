@@ -85,5 +85,6 @@ for(cv_approach in cv_approaches){
 }
 
 source("R/7_comparison.R")
+source("R/8_time_interval_comparison.R")
 
 
