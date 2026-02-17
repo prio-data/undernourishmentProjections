@@ -34,10 +34,10 @@ unlink(temp_files, recursive = TRUE)
 set.seed(123)
 
 # Set the working directory and get the list of NetCDF files
-setwd("")
+setwd("/Users/paola.vesco/ViEWS Dropbox/Paola Vesco/paola prio/projects/polimpact/undernourishment_paper/")
 
 
-crop <- read.csv("Production_Crops_Livestock_E_All_Data/Production_Crops_Livestock_E_All_Data_NOFLAG.csv")
+crop <- read.csv("data/crop/fao/Production_Crops_Livestock_E_All_Data/Production_Crops_Livestock_E_All_Data_NOFLAG.csv")
 
 # First, attempt conversion
 crop_final <- crop %>%
@@ -84,9 +84,10 @@ crop_final <- crop %>%
   summarise(crop = sum(crop, na.rm = TRUE), .groups = "drop")
 
 
-climate <- read.csv("clim_growingseason_country_year_allssps.csv")
+climate <- read.csv("data/final/clim_growingseason_country_year_allssps.csv")
 
 climate <- subset(climate, climate$year >= 1961)
+climate <- subset(climate, climate$year <= 2050)
 
 climate <- climate %>% rename(gwcode = country_id)
 
@@ -134,13 +135,13 @@ rx_plot <- ggplot() +
     data = hist_series,
     aes(x = year, y = rx5day),
     color = "black",
-    linewidth = 1
+    linewidth = 1.5
   ) +
   
   geom_line(
     data = ssp_series,
     aes(x = year, y = rx5day, color = scenario),
-    linewidth = 1
+    linewidth = 1.5
   ) +
   
   scale_color_manual(values = plotting_colors) +
@@ -152,9 +153,9 @@ rx_plot <- ggplot() +
     legend.text = element_text(size = 18)
   ) +
   labs(
-    subtitle = "Global mean Rx5day (growing season)",
+    subtitle = "Global mean RX5DAYGS",
     x = "Year",
-    y = "Rx5day"
+    y = "RX5DAYGS"
   )
 
 rx_plot
@@ -333,12 +334,12 @@ plot_marginal_with_hist <- function(
       panel.grid.minor = element_blank(),
       plot.background = element_rect(fill = "white", color = "white"),
       panel.background = element_rect(fill = "white", color = "white"),
-      text = element_text(family = "Arial", size = 14),
-      axis.title = element_text(size = 14),
-      axis.text = element_text(size = 14)
+      text = element_text(family = "Arial", size = 24),
+      axis.title = element_text(size = 24),
+      axis.text = element_text(size = 24)
     )
   
-  ggsave(p, filename = filename, dpi = 300)
+  ggsave(p, filename = filename, dpi = 350)
   return(p)
 }
 
@@ -347,13 +348,13 @@ ins_rx5day <- plot_marginal_with_hist(
   model    = gam_lmm_clim,
   data     = data_3y,
   var      = "rx5day_ma3",
-  xlab     = "3-year moving average of precipitation extreme (rx5day)", 
+  xlab     = "RX5DAYGS 3-year mov. avg.", 
   filename = "marginal_effect_rx5day_prectemp_ma3_cropdiff3_gam.png"
 )
 
 ins_rx5day
 
-ggsave(ins_rx5day, filename = "marginal_effect_rx5day_prectemp_ma3_cropdiff3_gam.png", dpi = 300)
+ggsave(ins_rx5day, filename = "marginal_effect_rx5day_prectemp_ma3_cropdiff3_gam.png", dpi = 350)
 
 plot_marginal_with_hist <- function(
     model,
@@ -416,22 +417,22 @@ plot_marginal_with_hist <- function(
       panel.grid.minor = element_blank(),
       plot.background = element_rect(fill = "white", color = "white"),
       panel.background = element_rect(fill = "white", color = "white"),
-      text = element_text(family = "Arial", size = 14),
-      axis.title = element_text(size = 14),
-      axis.text = element_text(size = 14)
+      text = element_text(family = "Arial", size = 24),
+      axis.title = element_text(size = 24),
+      axis.text = element_text(size = 24)
     )
   
-  ggsave(p, filename = filename, dpi = 300)
+  ggsave(p, filename = filename, dpi = 350)
   return(p)
 }
 ins_tx90 <- plot_marginal_with_hist(
   model    = gam_lmm_clim,
   data     = data_3y,
   var      = "tx90_ma3",
-  xlab     = "3-year moving average of extreme temperature (TX90)", 
+  xlab     = "TX90PGS 3-year mov. avg.", 
   filename = "marginal_effect_tx90_prectemp_ma3_cropdiff3_gam.png"
 )
 
 ins_tx90
-ggsave(ins_tx90, filename = "marginal_effect_tx90_prectemp_ma3_cropdiff3_gam.png", dpi = 300)
+ggsave(ins_tx90, filename = "marginal_effect_tx90_prectemp_ma3_cropdiff3_gam.png", dpi = 350)
 
