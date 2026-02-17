@@ -50,7 +50,7 @@ base_projections <- base_projections[year >= 2001 & year <= 2050]
 projected_countries <- base_projections$gwcode |> unique()
 
 harmonized_ssp <- fread("data/harmonized_ssp.csv")[,-"crop_country_share"]
-projdf <- harmonized_ssp[gwcode %in% projected_countries & year >= 2001]
+projdf <- harmonized_ssp[gwcode %in% projected_countries & year >= 2001,]
 
 countries_with_missing_data <- projdf[!complete.cases(projdf),]$gwcode |> unique()
 projdf <- projdf[!gwcode %in% countries_with_missing_data, -c("best", "v2x_polyarchy")]
