@@ -94,7 +94,7 @@ des_alt_time_intervals <- hetero_table("1-year" = fit_des, "3-year" = fit_des3, 
 tinytable::save_tt(des_alt_time_intervals, file.path("tables", simulation_alternative, "des_time_intervals.tex"), overwrite = TRUE)
 
 cv_alt_time_intervals <- hetero_table("1-year" = fit_cv, "3-year" = fit_cv3, "5-year" = fit_cv5,
-																			 title = "$\\Delta CV$ alternative time-intervals \\label{tab:des_time_intervals}",
+																			 title = "$\\Delta CV$ alternative time-intervals \\label{tab:cv_time_intervals}",
 																			 label_style = "latex",
 																			 add_args = list(fmt = fmt_decimal(digits = 4),
 																			 								escape = FALSE,
