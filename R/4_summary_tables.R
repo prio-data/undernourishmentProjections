@@ -222,7 +222,7 @@ B <- ggplot(fitted_df_ds_to_plot, aes(x= .pl1_g_gdppc_3, y = .pdi1_des)) +
 C <- ggplot(fitted_df_ds_to_plot, aes(x= .pl1_d_v2x_polyarchy_3, y = .pdi1_des)) +
 	geom_point() +
 	geom_smooth(method = "gam", se = TRUE) +
-	scale_x_continuous("DEM", labels = scales::comma) +
+	scale_x_continuous("DEM_Δ3", labels = scales::comma) +
 	ylab("ΔDES") +
 	theme_bw(base_size = 20)
 
