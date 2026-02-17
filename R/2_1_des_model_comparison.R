@@ -344,7 +344,7 @@ hetero_table("base" = comp$refitted_models[[1]],
 # Not better just adding SPEI6
 
 # All
-comp <- compare_models(base, drop_demsq, drop_variance, add_country_variance, add_extreme_precipitation, swap_spei6, add_spei6, original_data = main_df, test = T)
+comp <- compare_models(base, drop_demsq, drop_variance, add_country_variance, add_extreme_precipitation, original_data = main_df, test = T)
 comp
 
 print(xtable(comp$comparison,
