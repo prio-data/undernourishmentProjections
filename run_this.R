@@ -1,4 +1,4 @@
-# renv::install("../heterolm", rebuild = T)
+# renv::install("prio-data/heterolm", rebuild = T)
 library(heterolm)
 library(data.table)
 library(gtsummary)
