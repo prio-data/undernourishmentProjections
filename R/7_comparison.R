@@ -38,9 +38,10 @@ for(a in approach_names){
 		tmp[[i]] |> ungroup() |> dplyr::select(-scenario, -approach)  |>
 			gt::gt() |>
 			gt::fmt_number(c("NUN", "DES", "MDER", "BRD", "GDPPC", "POP"), decimals = 0) |>
-			gt::fmt_number(c("PoU", "CV", "DEM", "TX90"), decimals = 4) |>
+			gt::fmt_number(c("PoU", "CV"), decimals = 4) |>
+			gt::fmt_number(c("DEM", "TX90"), decimals = 2) |>
 			gt::tab_header(paste("Median global population-weighted results,", names(tmp)[i], "Approach:", a)) |>
-			gt::gtsave(file.path("tables", paste0("main_pou_", a, ".tex")))
+			gt::gtsave(file.path("tables", paste0("main_pou_", a, "_", names(tmp)[i], ".tex")))
 	}
 }
 

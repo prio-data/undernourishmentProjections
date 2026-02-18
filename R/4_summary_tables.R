@@ -238,58 +238,35 @@ ragg_png <- function(...) ragg::agg_png(..., res = 300, units = "in")
 ggsave(file.path("figures", simulation_alternative, "des_against_covariates.png"), device = ragg_png, width = 12, height = 12)
 
 
-to_plot <- main_df[gwcode %in% c(2, 372, 530, 750), c("gwcode", "year", "cv", "des", "best")]
+to_plot <- main_df[gwcode %in% c(2, 372, 530, 750, 100, 432, 700, 850), c("gwcode", "year", "cv", "des", "best")]
 to_plot$cname <- case_when(to_plot$gwcode == 2 ~ "USA",
 													 to_plot$gwcode == 372 ~ "Georgia",
 													 to_plot$gwcode == 530 ~ "Ethiopia",
-													 to_plot$gwcode == 750 ~ "India")
-
-A <- ggplot(to_plot[year >= 2000], aes(x = year, y = cv)) +
-	geom_line() +
-	facet_wrap(~cname) +
-	ylab("CV") + xlab("Year") +
-	theme_bw(base_size = 24)
-
-B <- ggplot(to_plot, aes(x = year, y = des)) +
-	geom_line() +
-	facet_wrap(~cname) +
-	ylab("DES") + xlab("Year") +
-	theme_bw(base_size = 24)
-
-C <- ggplot(to_plot, aes(x = year, y = best)) +
-	geom_line() +
-	scale_y_continuous("BRD", transform = "log1p", breaks = c(0, 1, 10, 100, 1000, 10000, 100000), limits = c(0, 100000)) +
-	facet_wrap(~cname) +
-	ylab("BRD") + xlab("Year") +
-	theme_bw(base_size = 24)
-
-A + B + C + patchwork::plot_layout(axes = "collect")
-ggsave(file.path("figures", "historical_des_cv_selected_countries.png"), device = ragg_png, width = 12, height = 6, scale = 1.5)
-
-to_plot <- main_df[gwcode %in% c(100, 432, 700, 850), c("gwcode", "year", "cv", "des", "best")]
-to_plot$cname <- case_when(to_plot$gwcode == 700 ~ "Afghanistan",
+													 to_plot$gwcode == 750 ~ "India",
+													 to_plot$gwcode == 700 ~ "Afghanistan",
 													 to_plot$gwcode == 432 ~ "Mali",
 													 to_plot$gwcode == 850 ~ "Indonesia",
 													 to_plot$gwcode == 100 ~ "Colombia")
 
-A <- ggplot(to_plot[year >= 2000], aes(x = year, y = cv)) +
+
+A <- ggplot(to_plot, aes(x = year, y = cv)) +
 	geom_line() +
-	facet_wrap(~cname) +
+	facet_wrap(~cname, ncol = 8) +
 	ylab("CV") + xlab("Year") +
 	theme_bw(base_size = 24)
 
 B <- ggplot(to_plot, aes(x = year, y = des)) +
 	geom_line() +
-	facet_wrap(~cname) +
+	facet_wrap(~cname, ncol = 8) +
 	ylab("DES") + xlab("Year") +
 	theme_bw(base_size = 24)
 
 C <- ggplot(to_plot, aes(x = year, y = best)) +
 	geom_line() +
-	scale_y_continuous("BRD", transform = "log1p", breaks = c(0, 1, 10, 100, 1000, 10000, 100000), limits = c(0, 100000)) +
-	facet_wrap(~cname) +
+	scale_y_continuous("BRD", transform = "log1p", breaks = c(0, 10, 100, 1000, 10000, 100000), limits = c(0, 100000)) +
+	facet_wrap(~cname, ncol = 8) +
 	ylab("BRD") + xlab("Year") +
 	theme_bw(base_size = 24)
 
-A + B + C + patchwork::plot_layout(axes = "collect")
-ggsave(file.path("figures", "historical_des_cv_selected_countries2.png"), device = ragg_png, width = 12, height = 6, scale = 1.5)
+A / B / C + patchwork::plot_layout(axes = "collect") & scale_x_continuous(breaks = c(1960, 1990, 2020), expand = expansion(mult = 0.13))
+ggsave(file.path("figures", "historical_des_cv_selected_countries.png"), device = ragg_png, width = 12, height = 10, scale = 1.5)
