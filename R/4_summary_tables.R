@@ -249,7 +249,7 @@ to_plot$cname <- case_when(to_plot$gwcode == 2 ~ "USA",
 													 to_plot$gwcode == 100 ~ "Colombia")
 
 
-A <- ggplot(to_plot, aes(x = year, y = cv)) +
+A <- ggplot(to_plot[year>=2000], aes(x = year, y = cv)) +
 	geom_line() +
 	facet_wrap(~cname, ncol = 8) +
 	ylab("CV") + xlab("Year") +
@@ -268,5 +268,20 @@ C <- ggplot(to_plot, aes(x = year, y = best)) +
 	ylab("BRD") + xlab("Year") +
 	theme_bw(base_size = 24)
 
-A / B / C + patchwork::plot_layout(axes = "collect") & scale_x_continuous(breaks = c(1960, 1990, 2020), expand = expansion(mult = 0.13))
-ggsave(file.path("figures", "historical_des_cv_selected_countries.png"), device = ragg_png, width = 12, height = 10, scale = 1.5)
+C2000 <- ggplot(to_plot[year>=2000], aes(x = year, y = best)) +
+	geom_line() +
+	scale_y_continuous("BRD", transform = "log1p", breaks = c(0, 10, 100, 1000, 10000, 100000), limits = c(0, 100000)) +
+	facet_wrap(~cname, ncol = 8) +
+	ylab("BRD") + xlab("Year") +
+	theme_bw(base_size = 24)
+
+B / C + patchwork::plot_layout(axes = "collect") & scale_x_continuous(breaks = c(1960, 1990, 2020), expand = expansion(mult = 0.13))
+ggsave(file.path("figures", "historical_des_brd_selected_countries.png"), device = ragg_png, width = 12, height = 8, scale = 1.5)
+
+A / C2000 + patchwork::plot_layout(axes = "collect") & scale_x_continuous(breaks = c(2000, 2010, 2020), expand = expansion(mult = 0.13))
+ggsave(file.path("figures", "historical_cv_brd_selected_countries.png"), device = ragg_png, width = 12, height = 8, scale = 1.5)
+
+
+
+
+
