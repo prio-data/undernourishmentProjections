@@ -1,5 +1,3 @@
-rm(list = ls())
-
 library(data.table)
 library(ggplot2)
 library(ggpubr)
@@ -15,6 +13,7 @@ path_sim <- "data/simbayes/"
 
 source(file = "R/simulation_functions.R")
 source(file = "R/simulation_functions_plot.R")
+source(file = "R/ppc_functions.R")
 
 dinarch_stan_model_code <- "
   data {
@@ -248,6 +247,13 @@ fit_long_term_ml <- nb_dinarch_x_fit(Y = data_gdppc_high, k = 1, lambda = 0.1)
 S <- 500
 year_max <- 2050
 gwcode_list_ <- sort(unique(data$gwcode))
+
+
+# PPC Goodness-of-fit Analysis -------------------------------------------------
+res <- ppc_nb_dinarch(data = data, fit = fit_bayes, S = 1000)
+print(res$summary)
+# ------------------------------------------------------------------------------
+
 
 
 # SSP1 -------------------------------------------------------------------------

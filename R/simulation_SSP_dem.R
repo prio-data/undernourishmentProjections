@@ -1,5 +1,3 @@
-rm(list = ls())
-
 library(data.table)
 library(ggplot2)
 library(ggpubr)
@@ -14,6 +12,7 @@ path_sim <- "data/sim/"
 
 source(file = "R/simulation_functions.R")
 source(file = "R/simulation_functions_plot.R")
+source(file = "R/ppc_functions.R")
 
 
 # Data -------------------------------------------------------------------------
@@ -48,6 +47,26 @@ data_sim <- data_sim[pol > 1e-6]
 data_sim <- data_sim[region != "NA"]
 
 S <- 500
+
+# PPC Goodness-of-fit Analysis -------------------------------------------------
+data_train <- copy(data)
+data_train <- data_train[pol > 1e-6]
+data_train[, pol_trans := sigmoid_inv(pol)]
+data_train[, pol_trans_delta := c(diff(pol_trans), NA), by = "gwcode"]
+data_train <- data_train[!is.na(pol + pol_trans + pol_trans_delta)]
+
+res <- ppc_polyarchy(data_sim, data_train, Nsim = 1000)
+print(res$summary)
+
+# plot of simulations
+plot_cases(
+	gwcodes = c(812, 211, 800),
+	N_plot = 200,
+	save_path = "~/Desktop/democracy_simulation_examples.png"
+)
+# ------------------------------------------------------------------------------
+
+
 
 # SSP1 -------------------------------------------------------------------------
 
