@@ -45,13 +45,15 @@ sim_polyarchy <- function(n, N, polyarchy_start, polyarchy_data, polyarchy_trans
 			pol_train_trans_j <- polyarchy_data[(pol - pol_delta <= pol_j) & (pol_j <= pol + pol_delta)]$pol_trans_delta
 
 			if (length(pol_train_trans_j) == 0) {
-				if (pol_j > pol_high) {
-					pol_trans_delta_j <- sample(polyarchy_data$pol_trans_delta, 1)
-				} else if (pol_j < pol_low) {
-					pol_trans_delta_j <- sample(polyarchy_data$pol_trans_delta, 1)
-				} else {
-					pol_trans_delta_j <- sample(polyarchy_data$pol_trans_delta, 1)
-				}
+				pol_trans_delta_j <- sample(polyarchy_data$pol_trans_delta, 1)
+
+				# if (pol_j > pol_high) {
+				# 	pol_trans_delta_j <- sample(polyarchy_data$pol_trans_delta, 1)
+				# } else if (pol_j < pol_low) {
+				# 	pol_trans_delta_j <- sample(polyarchy_data$pol_trans_delta, 1)
+				# } else {
+				# 	pol_trans_delta_j <- sample(polyarchy_data$pol_trans_delta, 1)
+				# }
 			} else {
 				pol_trans_delta_j <- sample(pol_train_trans_j, 1)
 			}
