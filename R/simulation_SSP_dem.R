@@ -62,7 +62,7 @@ print(res$summary)
 plot_cases(
 	gwcodes = c(812, 211, 800),
 	N_plot = 200,
-	save_path = "~/Desktop/democracy_simulation_examples.png"
+	save_path = "figures/base/democracy_simulation_examples.png"
 )
 # ------------------------------------------------------------------------------
 
