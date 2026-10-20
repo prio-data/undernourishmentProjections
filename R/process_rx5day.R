@@ -58,7 +58,7 @@ find_date(nc_file, start, end)
 
 # Process the NetCDF file
 
-#process_rx5day_data(nc_file, output_dir)
+process_rx5day_data(nc_file, output_dir)
 
 output_csv_grid <- file.path(output_dir, paste0("rx5day_CMIP6_", scenario, ".csv"))
 
