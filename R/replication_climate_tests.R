@@ -34,12 +34,14 @@ unlink(temp_files, recursive = TRUE)
 set.seed(123)
 
 # Set the working directory and get the list of NetCDF files
-setwd("/Users/paola.vesco/ViEWS Dropbox/Paola Vesco/paola prio/projects/polimpact/undernourishment_paper/")
+setwd("") # CHANGE
 
 
-crop <- read.csv("data/crop/fao/Production_Crops_Livestock_E_All_Data/Production_Crops_Livestock_E_All_Data_NOFLAG.csv")
+crop <- read.csv("Production_Crops_Livestock_E_All_Data_NOFLAG.csv")
 
-# First, attempt conversion
+crop %>% filter(Element == "Production", grepl("China", Area)) %>%
+  group_by(Area) %>% summarise(total_2020 = sum(Y2020, na.rm = TRUE))
+
 crop_final <- crop %>%
   filter(Element == "Production") %>% 
   rename_with(~str_remove(., "^Y"), starts_with("Y")) %>%
@@ -84,91 +86,14 @@ crop_final <- crop %>%
   summarise(crop = sum(crop, na.rm = TRUE), .groups = "drop")
 
 
-climate <- read.csv("data/final/clim_growingseason_country_year_allssps.csv")
+climate <- read.csv("clim_growingseason_country_year_allssps.csv")
 
+climate <- subset(climate, climate$year <= 2023)
 climate <- subset(climate, climate$year >= 1961)
-climate <- subset(climate, climate$year <= 2050)
 
 climate <- climate %>% rename(gwcode = country_id)
 
-# Exact SSP colors
-plotting_colors <- c(
-  "SSP1-2.6" = "#1E9620",
-  "SSP2-4.5" = "#4576BF",
-  "SSP3-7.0" = "#F21111",
-  "SSP4-7.0" = "#E88831",
-  "SSP5-8.5" = "#8036A8"
-)
 
-rx_long <- climate %>%
-  dplyr::select(gwcode, year, starts_with("rx5day")) %>%
-  pivot_longer(
-    cols = starts_with("rx5day"),
-    names_to = "scenario_raw",
-    values_to = "rx5day"
-  ) %>%
-  mutate(
-    scenario = case_when(
-      grepl("126", scenario_raw) ~ "SSP1-2.6",
-      grepl("245", scenario_raw) ~ "SSP2-4.5",
-      grepl("370", scenario_raw) ~ "SSP3-7.0",
-      grepl("470", scenario_raw) ~ "SSP4-7.0",
-      grepl("585", scenario_raw) ~ "SSP5-8.5"
-    )
-  ) %>%
-  filter(!is.na(scenario))
-
-rx_trend <- rx_long %>%
-  group_by(year, scenario) %>%
-  summarise(rx5day = mean(rx5day, na.rm = TRUE), .groups = "drop")
-
-#Plot historical series before 2014 where simulations start (data are same across all scenarios before 2015)
-hist_series <- rx_trend %>%
-  filter(year <= 2014, scenario == "SSP1-2.6")
-
-ssp_series <- rx_trend %>%
-  filter(year >= 2014)
-
-rx_plot <- ggplot() +
-  
-  geom_line(
-    data = hist_series,
-    aes(x = year, y = rx5day),
-    color = "black",
-    linewidth = 1.5
-  ) +
-  
-  geom_line(
-    data = ssp_series,
-    aes(x = year, y = rx5day, color = scenario),
-    linewidth = 1.5
-  ) +
-  
-  scale_color_manual(values = plotting_colors) +
-  
-  theme_bw(base_size = 24) +
-  theme(
-    legend.position = "bottom",
-    legend.title = element_blank(),
-    legend.text = element_text(size = 18)
-  ) +
-  labs(
-    subtitle = "Global mean RX5DAYGS",
-    x = "Year",
-    y = "RX5DAYGS"
-  )
-
-rx_plot
-
-ggsave(rx_plot, filename = "rx5day_trendlines.png", dpi = 350, width = 9,
-       height = 5.5,
-       units = "in")
-
-
-
-#correlation plot crop and rx5day
-
-climate <- subset(climate, climate$year <= 2023)
 data <- left_join(crop_final, climate, by = c("gwcode", "year"))
 data <- data %>%
   mutate(crop = round(crop / 1e6))  #  1M tonnes 
@@ -182,12 +107,15 @@ data$gwcode <- factor(data$gwcode)
 
 #correlation plot crop and rx5day
 
+
+#correlation plot crop and rx5day
+
 #Test different models###
 ##Aggregate to 3 year 
 
 library(zoo)
 
-# Compute 3-year moving average of spei6
+# Compute 3-year moving average 
 data_3y <- data %>%
   arrange(gwcode, year) %>%
   group_by(gwcode) %>%
@@ -334,12 +262,12 @@ plot_marginal_with_hist <- function(
       panel.grid.minor = element_blank(),
       plot.background = element_rect(fill = "white", color = "white"),
       panel.background = element_rect(fill = "white", color = "white"),
-      text = element_text(family = "Arial", size = 24),
-      axis.title = element_text(size = 24),
-      axis.text = element_text(size = 24)
+      text = element_text(family = "Arial", size = 14),
+      axis.title = element_text(size = 14),
+      axis.text = element_text(size = 14)
     )
   
-  ggsave(p, filename = filename, dpi = 350)
+  ggsave(p, filename = filename, dpi = 300)
   return(p)
 }
 
@@ -348,13 +276,13 @@ ins_rx5day <- plot_marginal_with_hist(
   model    = gam_lmm_clim,
   data     = data_3y,
   var      = "rx5day_ma3",
-  xlab     = "RX5DAYGS 3-year mov. avg.", 
+  xlab     = "3-year moving average of precipitation extreme (rx5day)", 
   filename = "marginal_effect_rx5day_prectemp_ma3_cropdiff3_gam.png"
 )
 
 ins_rx5day
 
-ggsave(ins_rx5day, filename = "marginal_effect_rx5day_prectemp_ma3_cropdiff3_gam.png", dpi = 350)
+ggsave(ins_rx5day, filename = "marginal_effect_rx5day_prectemp_ma3_cropdiff3_gam.png", dpi = 300)
 
 plot_marginal_with_hist <- function(
     model,
@@ -417,22 +345,101 @@ plot_marginal_with_hist <- function(
       panel.grid.minor = element_blank(),
       plot.background = element_rect(fill = "white", color = "white"),
       panel.background = element_rect(fill = "white", color = "white"),
-      text = element_text(family = "Arial", size = 24),
-      axis.title = element_text(size = 24),
-      axis.text = element_text(size = 24)
+      text = element_text(family = "Arial", size = 14),
+      axis.title = element_text(size = 14),
+      axis.text = element_text(size = 14)
     )
   
-  ggsave(p, filename = filename, dpi = 350)
+  ggsave(p, filename = filename, dpi = 300)
   return(p)
 }
 ins_tx90 <- plot_marginal_with_hist(
   model    = gam_lmm_clim,
   data     = data_3y,
   var      = "tx90_ma3",
-  xlab     = "TX90PGS 3-year mov. avg.", 
+  xlab     = "3-year moving average of extreme temperature (TX90)", 
   filename = "marginal_effect_tx90_prectemp_ma3_cropdiff3_gam.png"
 )
 
 ins_tx90
-ggsave(ins_tx90, filename = "marginal_effect_tx90_prectemp_ma3_cropdiff3_gam.png", dpi = 350)
+ggsave(ins_tx90, filename = "marginal_effect_tx90_prectemp_ma3_cropdiff3_gam.png", dpi = 300)
 
+
+
+###TREND LINE PLOT
+
+climate <- read.csv("clim_growingseason_country_year_allssps.csv")
+
+climate <- subset(climate, climate$year >= 1961)
+climate <- subset(climate, climate$year <= 2050)
+
+climate <- climate %>% rename(gwcode = country_id)
+
+# Exact SSP colors
+plotting_colors <- c(
+  "SSP1-2.6" = "#1E9620",
+  "SSP2-4.5" = "#4576BF",
+  "SSP3-7.0" = "#F21111",
+  "SSP5-8.5" = "#8036A8"
+)
+
+# Long format: one row per country, year and scenario
+rx_long <- climate %>%
+  dplyr::select(gwcode, year, starts_with("rx5day")) %>%
+  pivot_longer(
+    cols = starts_with("rx5day"),
+    names_to = "scenario_raw",
+    values_to = "rx5day"
+  ) %>%
+  mutate(
+    scenario = case_when(
+      grepl("126", scenario_raw) ~ "SSP1-2.6",
+      grepl("245", scenario_raw) ~ "SSP2-4.5",
+      grepl("370", scenario_raw) ~ "SSP3-7.0",
+      grepl("585", scenario_raw) ~ "SSP5-8.5"
+    )
+  ) %>%
+  filter(!is.na(scenario))
+
+# Global average across countries, by year and scenario
+rx_trend <- rx_long %>%
+  group_by(year, scenario) %>%
+  summarise(rx5day = mean(rx5day, na.rm = TRUE), .groups = "drop")
+
+# Historical series up to 2014 (identical across scenarios before 2015)
+hist_series <- rx_trend %>%
+  filter(year <= 2014, scenario == "SSP1-2.6")
+
+# Scenario projections from 2014 (2014 included so the lines connect to the historical series)
+ssp_series <- rx_trend %>%
+  filter(year >= 2014)
+
+rx_plot <- ggplot() +
+  
+  geom_line(
+    data = hist_series,
+    aes(x = year, y = rx5day),
+    color = "black",
+    linewidth = 1.2
+  ) +
+  
+  geom_line(
+    data = ssp_series,
+    aes(x = year, y = rx5day, color = scenario),
+    linewidth = 1.2
+  ) +
+  
+  scale_color_manual(values = plotting_colors) +
+  
+  theme_bw(base_size = 24) +
+  theme(
+    legend.position = "bottom",
+    legend.title = element_blank()
+  ) +
+  labs(
+    x = "Year",
+    y = "RX5DAYGS"
+  )
+
+rx_plot
+ggsave(rx_plot, filename = "rx5day_trendlines.png", dpi = 350)

@@ -363,7 +363,10 @@ process_tx90_quantiles <- function(nc_files, start_time_index, end_time_index, o
         fillvalue <- ncatt_get(nc_data, "tx90pETCCDI", "_FillValue")$value
         # Read the raster corresponding to the current time index
         tx90p_rast <- rast(nc_file)[[time_index]]
-        
+        dx <- mean(diff(sort(lon))); dy <- mean(abs(diff(sort(lat))))
+        ext(tx90p_rast) <- ext(min(lon) - dx/2, max(lon) + dx/2,
+                               min(lat) - dy/2, max(lat) + dy/2)
+        crs(tx90p_rast) <- "EPSG:4326"
         
         if(max(lon) > 200){
           tx90p_rast <- rotate(tx90p_rast)
@@ -383,7 +386,6 @@ process_tx90_quantiles <- function(nc_files, start_time_index, end_time_index, o
         }
         tx90p_rast <- app(tx90p_rast, replace_fill_value)
         target_raster <- rast(nrows = 180, ncols = 360, ext = ext(-180, 180, -90, 90), crs = "EPSG:4326")
-        ext(tx90p_rast) <- ext(target_raster)
         tx90p_rast <- project(tx90p_rast, "EPSG:4326")
         
         # Resample to a standard 1x1 degree grid
@@ -427,7 +429,8 @@ process_tx90_quantiles <- function(nc_files, start_time_index, end_time_index, o
       # Save the dataframe as a Parquet file for the current time index
       parquet_file <- file.path(output_dir, paste0("tx90p_quantiles_time_index_", time_index, ".parquet"))
       write_parquet(quantile_df, parquet_file)
-      
+      tmpFiles(remove = TRUE)
+      gc()
       cat(green("Quantile computation done and saved for time index:", time_index, "\n"))
     }
   
@@ -468,8 +471,7 @@ process_crop_tiff <- function(directory) {
       combined_raster <- combined_raster[[valid_layer_names]]
       names(combined_raster) <- tolower(gsub("_A$", "", names(combined_raster)))
       
-      # Set the desired resolution to 1x1 degrees (roughly 111km x 111km at the equator)
-      # Aggregate by summing to reach the new resolution
+      
       agg_raster <- aggregate(combined_raster, fact = 1/res(combined_raster), fun = sum, na.rm = TRUE)
       
       agg_raster <- project(agg_raster, "EPSG:4326")

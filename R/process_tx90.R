@@ -25,7 +25,7 @@ unlink(temp_files, recursive = TRUE)
 
 
 # Set the working directory and get the list of NetCDF files
-#setwd("")
+setwd("") #CHANGE
 source("code/replication_climate_data/functions.R")
 
 #Process across all scenarios. Historical timeseries always the same!
@@ -33,6 +33,7 @@ source("code/replication_climate_data/functions.R")
 #############################################
 ##############HIST###########################
 #############################################
+
 
 scenario  <- 'hist'
 
@@ -45,7 +46,7 @@ end_year <- 2100}
 
 
 # Define the directory based on the scenario
-directory <- paste0("data/extremes/tx90/tx90p_", scenario, "/")
+directory <- paste0("data/extremes/tx90p/tx90p_", scenario, "/")
 
 # Use list.files to find the files with the ".nc" extension
 nc_files <- list.files(directory, pattern = "\\.nc$", full.names = TRUE, recursive = T)
@@ -118,11 +119,10 @@ end_year <- 2100}
 
 
 # Define the directory based on the scenario
-directory <- paste0("data/extremes/tx90/tx90p_", scenario, "/")
+directory <- paste0("data/extremes/tx90p/tx90p_", scenario, "/")
 
 # Use list.files to find the files with the ".nc" extension
 nc_files <- list.files(directory, pattern = "\\.nc$", full.names = TRUE, recursive = T)
-
 
 # Define the output directory for the processed Parquet files
 output_dir <- paste0("data/extremes/processed/tx90p_", scenario)
@@ -192,11 +192,10 @@ end_year <- 2100}
 
 
 # Define the directory based on the scenario
-directory <- paste0("data/extremes/tx90/tx90p_", scenario, "/")
+directory <- paste0("data/extremes/tx90p/tx90p_", scenario, "/")
 
 # Use list.files to find the files with the ".nc" extension
 nc_files <- list.files(directory, pattern = "\\.nc$", full.names = TRUE, recursive = T)
-
 
 # Define the output directory for the processed Parquet files
 output_dir <- paste0("data/extremes/processed/tx90p_", scenario)
@@ -265,11 +264,10 @@ end_year <- 2100}
 
 
 # Define the directory based on the scenario
-directory <- paste0("data/extremes/tx90/tx90p_", scenario, "/")
+directory <- paste0("data/extremes/tx90p/tx90p_", scenario, "/")
 
 # Use list.files to find the files with the ".nc" extension
 nc_files <- list.files(directory, pattern = "\\.nc$", full.names = TRUE, recursive = T)
-
 
 # Define the output directory for the processed Parquet files
 output_dir <- paste0("data/extremes/processed/tx90p_", scenario)
@@ -337,11 +335,10 @@ end_year <- 2100}
 
 
 # Define the directory based on the scenario
-directory <- paste0("data/extremes/tx90/tx90p_", scenario, "/")
+directory <- paste0("data/extremes/tx90p/tx90p_", scenario, "/")
 
 # Use list.files to find the files with the ".nc" extension
 nc_files <- list.files(directory, pattern = "\\.nc$", full.names = TRUE, recursive = T)
-
 
 # Define the output directory for the processed Parquet files
 output_dir <- paste0("data/extremes/processed/tx90p_", scenario)
@@ -371,7 +368,6 @@ start_time_index <- time_indices$startdate
 end_time_index <- time_indices$enddate
 
 process_tx90_quantiles(nc_files, start_time_index, end_time_index, output_dir)
-
 
 # Read and combine grid-level Parquet files
 grid_data <- read_combine_parquet("tx90p_quantiles_time_index")
@@ -442,7 +438,7 @@ tx90p <- bind_rows(tx90p_hist, tx90p_fut)
 summary(tx90p)
 
 write.csv(tx90p, paste0('data/extremes/processed/tx90p_', scenario, '/tx90p_CMIP6_hist_', scenario, '.csv'), row.names = FALSE)
-write_dta(tx90p, paste0('data/extremes/processed/tx90p_', scenario, '/tx90p_CMIP6_hist_', scenario, '.dta'))
+#write_dta(tx90p, paste0('data/extremes/processed/tx90p_', scenario, '/tx90p_CMIP6_hist_', scenario, '.dta'))
 
 
 
@@ -464,7 +460,7 @@ tx90p <- bind_rows(tx90p_hist, tx90p_fut)
 summary(tx90p)
 
 write.csv(tx90p, paste0('data/extremes/processed/tx90p_', scenario, '/tx90p_CMIP6_hist_', scenario, '.csv'), row.names = FALSE)
-write_dta(tx90p, paste0('data/extremes/processed/tx90p_', scenario, '/tx90p_CMIP6_hist_', scenario, '.dta'))
+#write_dta(tx90p, paste0('data/extremes/processed/tx90p_', scenario, '/tx90p_CMIP6_hist_', scenario, '.dta'))
 
 
 
@@ -486,6 +482,6 @@ tx90p <- bind_rows(tx90p_hist, tx90p_fut)
 summary(tx90p)
 
 write.csv(tx90p, paste0('data/extremes/processed/tx90p_', scenario, '/tx90p_CMIP6_hist_', scenario, '.csv'), row.names = FALSE)
-write_dta(tx90p, paste0('data/extremes/processed/tx90p_', scenario, '/tx90p_CMIP6_hist_', scenario, '.dta'))
+#write_dta(tx90p, paste0('data/extremes/processed/tx90p_', scenario, '/tx90p_CMIP6_hist_', scenario, '.dta'))
 
 
