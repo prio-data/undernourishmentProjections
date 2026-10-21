@@ -131,12 +131,8 @@ rx5day_ssp585 <- rx5day_ssp585 %>%
 # Merge climate variables by scenario
 # ===============================================================
 
-# CHANGED: joins are no longer based on SPI6.
 # Country assignment (from the SPI6 country extraction) is a property of the grid cell,
-# with fixed borders, so it is taken once per cell and attached to TX90p, which is used
-# as the base. SPI6, SPEI6 and RX5day are then joined on. This way, cell-months where
-# SPI6 is missing (e.g. dry cells, or months where the 6-month index cannot be computed)
-# keep their TX90p and RX5day values instead of being dropped.
+# with fixed borders, so it is taken once per cell and attached to TX90p.
 
 # One country per cell
 cell_country <- spi6_ssp245 %>%
@@ -280,13 +276,8 @@ data <- inner_join(clim_all, crops_gs, by = c("lon", "lat")) %>%
                           0)
   )
 
-# Assign each month's overlap to the harvest year of its season
-data <- bind_rows(
-  data %>% mutate(days_in_overlap = overlap_cur,
-                  year = ifelse(crosses, year + 1, year)),
-  data %>% filter(crosses) %>%
-    mutate(days_in_overlap = overlap_prev)          # harvest year = this year
-) %>%
+data <- data %>%
+  mutate(days_in_overlap = overlap_cur + overlap_prev) %>%
   filter(days_in_overlap > 0) %>%
   mutate(
     adjusted_gs_days = days_in_overlap,
@@ -312,11 +303,6 @@ data <- bind_rows(
     weighted_rx5day_585 = rx5day_median_ssp585 * days_in_overlap
   )
 
-# CHANGED: each indicator is now divided by the growing-season days for which THAT indicator
-# has a value (days_with()), instead of by all growing-season days. If an indicator is missing
-# in some months of a season (e.g. SPI6/SPEI6 in early 2015), the old version summed only the
-# available months but divided by all days, pulling the average towards zero. When no values
-# are missing, days_with() equals gs_days and results are identical to before.
 days_with <- function(days, x) sum(days[!is.na(x)])
 
 data_yearly <- data %>%
@@ -358,7 +344,7 @@ data_yearly <- data %>%
 
 yrs <- range(clim_all$year)
 data_yearly <- data_yearly %>%
-  filter(year > yrs[1], year <= yrs[2])
+  filter(year >= yrs[1], year <= yrs[2])
 
 write_parquet(data, 'data/final/clim_all.parquet')
 
